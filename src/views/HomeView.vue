@@ -24,7 +24,7 @@ import { useRouter } from 'vue-router'
 import { createAppI18n } from '../i18n'
 
 const router = useRouter()
-const { t } = createAppI18n(navigator.language)
+const { t } = createAppI18n(localStorage.getItem('locale') || navigator.language)
 </script>
 
 <style scoped>

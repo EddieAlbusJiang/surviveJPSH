@@ -1,5 +1,5 @@
 export default {
-  'app.title': 'surviveJPSH 建平中学生存手册',
+  'app.title': '建平中学生存手册',
   'nav.home': '首页',
   'nav.docs': '文档',
   'nav.study': '学习篇',
@@ -29,10 +29,12 @@ export default {
   'settings.title': '设置',
   'settings.appearance': '外观',
   'settings.theme': '主题',
+  'settings.theme.desc': '选择应用颜色模式',
   'settings.theme.light': '浅色',
   'settings.theme.dark': '深色',
   'settings.theme.system': '跟随系统',
   'settings.language': '语言',
+  'settings.language.desc': '选择界面语言',
   'settings.language.zh': '中文',
   'settings.language.en': 'English'
 }

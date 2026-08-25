@@ -16,7 +16,7 @@ import { parseMarkdown } from '../utils/markdown'
 import { createAppI18n } from '../i18n'
 
 const route = useRoute()
-const { t } = createAppI18n(navigator.language)
+const { t } = createAppI18n(localStorage.getItem('locale') || navigator.language)
 const content = ref('')
 
 const mdModules = import.meta.glob('/src/docs/*.md', {

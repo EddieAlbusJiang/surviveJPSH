@@ -1,5 +1,5 @@
 export default {
-  'app.title': 'surviveJPSH Jianping High School Survival Guide',
+  'app.title': 'surviveJPSH',
   'nav.home': 'Home',
   'nav.docs': 'Docs',
   'nav.study': 'Study Guide',
@@ -29,10 +29,12 @@ export default {
   'settings.title': 'Settings',
   'settings.appearance': 'Appearance',
   'settings.theme': 'Theme',
+  'settings.theme.desc': 'Choose your app color mode',
   'settings.theme.light': 'Light',
   'settings.theme.dark': 'Dark',
   'settings.theme.system': 'Follow system',
   'settings.language': 'Language',
+  'settings.language.desc': 'Choose the interface language',
   'settings.language.zh': '中文',
   'settings.language.en': 'English'
 }

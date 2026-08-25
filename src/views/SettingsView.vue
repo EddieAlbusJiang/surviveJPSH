@@ -1,109 +1,134 @@
 <template>
-  <div class="settings-view">
-    <h1 class="settings-title">{{ t('settings.title') }}</h1>
-
-    <WinExpander :Header="t('settings.appearance')" :IsOpen="true">
-      <div class="settings-section">
-        <WinComboBox
-          :Header="t('settings.theme')"
-          :ItemsSource="themeOptions"
-          :SelectedIndex="themeIndex"
-          @SelectionChanged="onThemeChange"
-        />
+  <WinGrid class="settings-page-root" RowDefinitions="Auto,*">
+    <WinTextBlock
+      class="settings-page-header"
+      AutomationProperties.HeadingLevel="Level1"
+      FontSize="28"
+      FontWeight="600"
+      LineHeight="36"
+      Margin="36,24,36,30"
+      Style="{StaticResource TitleTextBlockStyle}"
+      TextWrapping="NoWrap"
+      :Text="t('settings.title')" />
+    <WinScrollViewer
+      class="settings-page-scroll"
+      VerticalScrollBarVisibility="Auto"
+      VerticalScrollMode="Auto">
+      <div class="gallery-item-page settings-page-body">
+        <div class="gallery-page-content">
+          <WinTextBlock class="settings-section-title" :Text="t('settings.appearance')" />
+          <div class="settings-controls">
+            <WinSettingsCard
+              :Header="t('settings.theme')"
+              :Description="t('settings.theme.desc')"
+              HeaderIcon="&#xE771;"
+              :Height="70">
+              <WinComboBox
+                v-model:SelectedValue="themeValue"
+                :ItemsSource="themeOptions"
+                DisplayMemberPath="label"
+                SelectedValuePath="value" />
+            </WinSettingsCard>
+            <WinSettingsCard
+              :Header="t('settings.language')"
+              :Description="t('settings.language.desc')"
+              HeaderIcon="&#xE774;"
+              :Height="70">
+              <WinComboBox
+                v-model:SelectedValue="languageValue"
+                :ItemsSource="languageOptions"
+                DisplayMemberPath="label"
+                SelectedValuePath="value" />
+            </WinSettingsCard>
+          </div>
+        </div>
       </div>
-    </WinExpander>
-
-    <WinExpander :Header="t('settings.language')" :IsOpen="true">
-      <div class="settings-section">
-        <WinComboBox
-          :Header="t('settings.language')"
-          :ItemsSource="languageOptions"
-          :SelectedIndex="languageIndex"
-          @SelectionChanged="onLanguageChange"
-        />
-      </div>
-    </WinExpander>
-  </div>
+    </WinScrollViewer>
+  </WinGrid>
 </template>
 
 <script setup lang="ts">
-import { inject, ref, computed } from 'vue'
-import WinExpander from '../components/WinExpander.vue'
+import { inject, computed } from 'vue'
+import WinGrid from '../components/WinGrid.vue'
+import WinScrollViewer from '../components/WinScrollViewer.vue'
+import WinTextBlock from '../components/WinTextBlock.vue'
+import WinSettingsCard from '../components/WinSettingsCard.vue'
 import WinComboBox from '../components/WinComboBox.vue'
 import { createAppI18n } from '../i18n'
 
-const { t } = createAppI18n(navigator.language)
+const { t } = createAppI18n(localStorage.getItem('locale') || navigator.language)
 
-const appTheme = inject<import('vue').Ref<string>>('appTheme', ref('system'))
-const setAppTheme = inject<(v: 'light' | 'dark' | 'system') => void>('setAppTheme', () => {})
+const appTheme = inject<import('vue').Ref<string>>('appTheme')
+const setAppTheme = inject<(v: string) => void>('setAppTheme')
 
-const themeOptions = computed(() => [
-  { label: t('settings.theme.light') },
-  { label: t('settings.theme.dark') },
-  { label: t('settings.theme.system') },
-])
+const themeOptions = [
+  { label: t('settings.theme.system'), value: 'system' },
+  { label: t('settings.theme.light'), value: 'light' },
+  { label: t('settings.theme.dark'), value: 'dark' },
+]
 
-const themeMap: Array<'light' | 'dark' | 'system'> = ['light', 'dark', 'system']
-
-const themeIndex = computed(() => {
-  const idx = themeMap.indexOf(appTheme.value as 'light' | 'dark' | 'system')
-  return idx >= 0 ? idx : 2
+const themeValue = computed({
+  get: () => appTheme?.value ?? 'system',
+  set: (v: string) => setAppTheme?.(v),
 })
 
-const onThemeChange = (args: { AddedItems: any[] }) => {
-  const item = args?.AddedItems?.[0]
-  const label = item?.label ?? item
-  const idx = themeOptions.value.findIndex((o) => o.label === label)
-  if (idx >= 0) {
-    setAppTheme(themeMap[idx])
-  }
+const normalizeLocale = (locale: string) => {
+  if (locale.startsWith('zh')) return 'zh-CN'
+  if (locale.startsWith('en')) return 'en-US'
+  return 'zh-CN'
 }
 
-const languageOptions = computed(() => [
-  { label: t('settings.language.zh') },
-  { label: t('settings.language.en') },
-])
+const languageOptions = [
+  { label: t('settings.language.zh'), value: 'zh-CN' },
+  { label: t('settings.language.en'), value: 'en-US' },
+]
 
-const localeMap = ['zh-CN', 'en-US']
-
-const languageIndex = computed(() => {
-  const saved = localStorage.getItem('locale') || navigator.language
-  const idx = localeMap.indexOf(saved)
-  return idx >= 0 ? idx : 0
-})
-
-const onLanguageChange = (args: { AddedItems: any[] }) => {
-  const item = args?.AddedItems?.[0]
-  const label = item?.label ?? item
-  const idx = languageOptions.value.findIndex((o) => o.label === label)
-  if (idx >= 0) {
-    localStorage.setItem('locale', localeMap[idx])
+const languageValue = computed({
+  get: () => normalizeLocale(localStorage.getItem('locale') || navigator.language),
+  set: (v: string) => {
+    localStorage.setItem('locale', v)
     location.reload()
-  }
-}
+  },
+})
 </script>
 
 <style scoped>
-.settings-view {
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
+.settings-page-root {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 
-.settings-title {
-  font-size: 2rem;
+.settings-page-header {
+  max-width: 1064px;
+}
+
+.settings-page-scroll {
+  grid-row: 2;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.settings-page-body {
+  padding-top: 0;
+}
+
+.settings-section-title {
+  font-size: 14px;
   font-weight: 600;
-  margin: 0 0 2rem 0;
-  color: var(--text-primary);
 }
 
-.settings-section {
-  padding: 1rem 0;
+.settings-controls {
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
+  margin-bottom: 32px;
 }
 
-@media (max-width: 768px) {
-  .settings-view {
-    padding: 1rem;
-  }
+.settings-controls :deep(.win-settings-card) {
+  margin-bottom: 4px;
 }
 </style>
