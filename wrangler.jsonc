@@ -7,8 +7,8 @@
 	"name": "survivejpsh",
 	"compatibility_date": "2026-08-05",
 	"assets": {
-		// The path to the directory containing the `index.html` file to be served at `/`
-		"directory": "./docs"
+		"directory": "./dist",
+		"not_found_handling": "single-page-application"
 	},
 	"observability": {
 		"enabled": true
