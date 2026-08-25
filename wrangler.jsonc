@@ -8,7 +8,7 @@
 	"compatibility_date": "2026-08-05",
 	"assets": {
 		// The path to the directory containing the `index.html` file to be served at `/`
-		"directory": "./public"
+		"directory": "./docs"
 	},
 	"observability": {
 		"enabled": true
