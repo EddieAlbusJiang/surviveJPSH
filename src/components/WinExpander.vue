@@ -48,7 +48,7 @@
         <slot name="HeaderControls"></slot>
       </div>
       <span class="win-expander-chevron" aria-hidden="true">
-        <span class="icon win-expander-arrow"></span>
+        <span class="icon win-expander-arrow">&#xF2A6</span>
       </span>
     </div>
     <div class="win-expander-grid">

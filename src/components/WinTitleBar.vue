@@ -52,7 +52,7 @@
         class="icon animated-icon animated-icon-back"
         :class="backClass"
         aria-hidden="true"
-        @animationend="onBackAnimEnd">&#xF15C;</span>
+        @animationend="onBackAnimEnd">&#xF189;</span>
     </button>
 
     <button
@@ -702,7 +702,7 @@ defineExpose({
     background: var(--TitleBarBackButtonBackground);
     cursor: pointer;
     font-family: var(--SymbolThemeFontFamily, 'WinUIOnWebIcons');
-    font-size: 16px;
+    font-size: 18px;
     transition: background var(--fast-duration) var(--fast-out-slow-in), color var(--fast-duration) var(--fast-out-slow-in);
   }
 
@@ -712,10 +712,10 @@ defineExpose({
 
   .win-titlebar-back-button .icon,
   .win-titlebar-pane-toggle-button .icon {
-    width: 16px;
-    height: 16px;
-    font-size: 16px;
-    line-height: 16px;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    line-height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;

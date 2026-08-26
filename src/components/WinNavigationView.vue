@@ -26,7 +26,7 @@
               <span v-if="item.icon" class="icon">{{ item.icon }}</span>
               <WinTextBlock class="label" :Text="item.label" />
               <WinInfoBadge v-if="item.infoBadge" class="win-nav-infobadge" v-bind="item.infoBadge" />
-              <span class="icon win-nav-group-chevron" :class="groupChevronClass(item.value)" @click.stop="onGroupChevronClick(item)"></span>
+              <span class="icon win-nav-group-chevron" :class="groupChevronClass(item.value)" @click.stop="onGroupChevronClick(item)">&#xF2A6</span>
             </div>
           </div>
         </template>
@@ -61,7 +61,7 @@
             <span v-if="item.icon" class="icon">{{ item.icon }}</span>
             <WinTextBlock class="label" :Text="item.label" />
             <WinInfoBadge v-if="item.infoBadge" class="win-nav-infobadge" v-bind="item.infoBadge" />
-            <span v-if="item.children" class="icon win-nav-group-chevron">&#xF294;</span>
+            <span v-if="item.children" class="icon win-nav-group-chevron">&#xF2A6;</span>
           </div>
         </template>
         <div class="win-nav-item win-nav-more-button" data-value="__more">
@@ -121,7 +121,7 @@
                   <span v-if="item.icon" class="icon">{{ item.icon }}</span>
                   <WinTextBlock class="label" :Text="item.label" />
                   <WinInfoBadge v-if="item.infoBadge" class="win-nav-infobadge" v-bind="item.infoBadge" />
-                  <span class="icon win-nav-group-chevron" :class="groupChevronClass(item.value)" @click.stop="onGroupChevronClick(item)">&#xF294;</span>
+                  <span class="icon win-nav-group-chevron" :class="groupChevronClass(item.value)" @click.stop="onGroupChevronClick(item)">&#xF2A6;</span>
                 </div>
                 <div
                   class="win-nav-group-children"
@@ -181,7 +181,7 @@
               <span v-if="item.icon" class="icon">{{ item.icon }}</span>
               <WinTextBlock class="label" :Text="item.label" />
               <WinInfoBadge v-if="item.infoBadge" class="win-nav-infobadge" v-bind="item.infoBadge" />
-              <span class="icon win-nav-group-chevron" :class="groupChevronClass(item.value)" @click.stop="onMoreGroupChevronClick(item)">&#xF294;</span>
+              <span class="icon win-nav-group-chevron" :class="groupChevronClass(item.value)" @click.stop="onMoreGroupChevronClick(item)">&#xF2A6;</span>
             </div>
             <div class="win-nav-group-children" :style="{ height: groupExpanded[item.value] ? ((item.children?.length || 0) * 36) + 'px' : '0px' }">
               <div class="win-nav-group-children-inner">

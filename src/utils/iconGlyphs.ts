@@ -1,5 +1,5 @@
 export const IconGlyphs = {
-  Home:              '\uF481',
+  Home:              '\uE17C',
   Search:            '\uF690',
   Settings:          '\uF6AA',
   ArrowLeft:         '\uF15C',
@@ -10,7 +10,7 @@ export const IconGlyphs = {
   MoreHorizontal:    '\uE825',
   Dismiss:           '\uF356',
   Checkmark:         '\uF285',
-  Info:              '\uF504',
+  Info:              '\u{0F085B}',
   Delete:            '\uF34D',
   Mail:              '\uF527',
   Person:            '\uF582',
