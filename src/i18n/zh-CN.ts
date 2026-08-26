@@ -10,6 +10,7 @@ export default {
   'home.study.desc': '选科、学习资源、身心状态、学习策略',
   'home.life.desc': '老师、规则、朋友、恋爱、家长、活动、建议',
   'search.placeholder': '搜索文档...',
+  'search.noResults': '没有找到结果',
   'about.title': '关于',
   'about.project': '项目介绍',
   'about.project.desc': '本项目旨在为建平中学新生提供一份实用的校园生存指南，涵盖学习和生活两个方面。',

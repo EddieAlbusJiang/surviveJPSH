@@ -278,7 +278,7 @@ const onSuggestionClick = (index: number) => {
 const submitQuery = (chosenSuggestion: Suggestion | null = null, queryText = currentText.value) => {
   shouldOpenForUserInput.value = false;
   emit('QuerySubmitted', { QueryText: queryText, ChosenSuggestion: chosenSuggestion });
-  void setOpen(false);
+  void setOpen(suggestionItems.value.length > 0);
 };
 
 const onKeydown = (event: KeyboardEvent) => {

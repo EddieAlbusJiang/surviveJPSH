@@ -1,33 +1,136 @@
-export interface SearchItem {
-  id: string
+export interface SearchResult {
   title: string
+  subtitle: string
   path: string
-  content: string
 }
 
-const searchIndex: SearchItem[] = [
-  {
-    id: 'study',
-    title: '学习篇',
-    path: '/doc/study',
-    content: '选科 学习资源 身心状态 学习策略 选科规则 选科指导 优势和兴趣 大学专业选择 学校资源 老师 班型 师资 同学互助 校内作业 校内考试 校外资源 网课 补课班 教辅 真题卷 AI 身体状态 运动 睡眠 学习心态 学习节奏 假努力 学习策略 统筹策略 学习方法'
-  },
-  {
-    id: 'life',
-    title: '生活篇',
-    path: '/doc/life',
-    content: '老师 规则 朋友 恋爱 家长 课程 活动 校园资源 社团 学生组织 项目 办活动 建立社团 精力 动力 情绪稳定 学习建议 高中生活'
-  }
-]
+const mdModules = import.meta.glob('/src/docs/*.md', {
+  query: '?raw',
+  import: 'default',
+  eager: true
+}) as Record<string, string>
 
-export function searchDocs(query: string): SearchItem[] {
+const docTitles: Record<string, Record<string, string>> = {
+  study: { 'zh-CN': '学习篇', 'en-US': 'Study Guide' },
+  life: { 'zh-CN': '生活篇', 'en-US': 'Life Guide' }
+}
+
+export function getDocTitle(docId: string, locale: string): string {
+  const titles = docTitles[docId]
+  if (!titles) return docId
+  return titles[locale] || titles['zh-CN'] || docId
+}
+
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\u4e00-\u9fff-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/_(.+?)_/g, '$1')
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+    .replace(/!\[.*?\]\(.+?\)/g, '')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/~~(.+?)~~/g, '$1')
+    .trim()
+}
+
+interface RawSection {
+  heading: string
+  content: string
+  anchor: string
+}
+
+function parseSections(raw: string): RawSection[] {
+  const sections: RawSection[] = []
+  const lines = raw.split('\n')
+  let currentHeading = ''
+  let currentContent: string[] = []
+
+  for (const line of lines) {
+    const m = line.match(/^#{1,4}\s+(.+)/)
+    if (m) {
+      if (currentHeading || currentContent.length > 0) {
+        const heading = currentHeading
+        sections.push({
+          heading,
+          content: currentContent.join('\n'),
+          anchor: slugify(heading)
+        })
+      }
+      currentHeading = m[1].trim()
+      currentContent = []
+    } else {
+      currentContent.push(line)
+    }
+  }
+
+  if (currentHeading || currentContent.length > 0) {
+    const heading = currentHeading
+    sections.push({
+      heading,
+      content: currentContent.join('\n'),
+      anchor: slugify(heading)
+    })
+  }
+
+  return sections
+}
+
+interface IndexEntry {
+  docId: string
+  heading: string
+  content: string
+  anchor: string
+}
+
+function buildIndex(): IndexEntry[] {
+  const index: IndexEntry[] = []
+
+  for (const [path, raw] of Object.entries(mdModules)) {
+    const match = path.match(/\/([^/]+)\.md$/)
+    if (!match) continue
+    const docId = match[1]
+
+    const sections = parseSections(raw)
+    for (const section of sections) {
+      index.push({
+        docId,
+        heading: section.heading,
+        content: stripMarkdown(section.content),
+        anchor: section.anchor
+      })
+    }
+  }
+
+  return index
+}
+
+const searchIndex = buildIndex()
+
+export function searchDocs(query: string, locale: string = 'zh-CN'): SearchResult[] {
   if (!query || query.trim().length === 0) return []
 
-  const lowerQuery = query.toLowerCase()
-  const terms = lowerQuery.split(/\s+/).filter(t => t.length > 0)
+  const terms = query.toLowerCase().split(/\s+/).filter(t => t.length > 0)
 
-  return searchIndex.filter(item => {
-    const searchText = `${item.title} ${item.content}`.toLowerCase()
-    return terms.every(term => searchText.includes(term))
-  }).slice(0, 10)
+  return searchIndex
+    .filter(section => {
+      const searchText = `${section.heading} ${section.content}`.toLowerCase()
+      return terms.every(term => searchText.includes(term))
+    })
+    .map(section => ({
+      title: section.heading,
+      subtitle: getDocTitle(section.docId, locale),
+      path: `/doc/${section.docId}#${section.anchor}`
+    }))
+    .slice(0, 10)
 }

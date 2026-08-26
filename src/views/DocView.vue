@@ -8,11 +8,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import WinScrollViewer from '../components/WinScrollViewer.vue'
 import WinBreadcrumbBar from '../components/WinBreadcrumbBar.vue'
 import { parseMarkdown } from '../utils/markdown'
+import { slugify } from '../utils/searchIndex'
 import { createAppI18n } from '../i18n'
 
 const route = useRoute()
@@ -25,6 +26,29 @@ const mdModules = import.meta.glob('/src/docs/*.md', {
 })
 
 const renderedMarkdown = computed(() => parseMarkdown(content.value))
+
+function addHeadingIds() {
+  const container = document.querySelector('.doc-content')
+  if (!container) return
+  container.querySelectorAll('h1, h2, h3, h4').forEach(el => {
+    const text = el.textContent?.trim() || ''
+    if (text && !el.id) {
+      el.id = slugify(text)
+    }
+  })
+}
+
+function scrollToHash() {
+  const hash = route.hash.slice(1)
+  if (hash) {
+    nextTick(() => {
+      const el = document.getElementById(hash)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' })
+      }
+    })
+  }
+}
 
 const docTitleMap: Record<string, string> = {
   study: t('nav.study'),
@@ -46,6 +70,9 @@ watch(() => route.params.id, async (id) => {
     try {
       const mod = await loader() as string
       content.value = mod
+      await nextTick()
+      addHeadingIds()
+      scrollToHash()
     } catch {
       content.value = `# ${t('doc.loadError')}`
     }
@@ -53,6 +80,13 @@ watch(() => route.params.id, async (id) => {
     content.value = `# ${t('doc.notFound')}`
   }
 }, { immediate: true })
+
+watch(() => route.hash, () => {
+  if (route.hash) {
+    addHeadingIds()
+    scrollToHash()
+  }
+})
 </script>
 
 <style scoped>

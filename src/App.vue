@@ -11,9 +11,14 @@
       @BackRequested="onBackRequested"
       @PaneToggleRequested="onTopBarToggle">
       <WinAutoSuggestBox
+        v-model:Text="searchQuery"
+        :ItemsSource="searchResults"
+        TextMemberPath="title"
         :PlaceholderText="t('search.placeholder')"
+        QueryIcon="Find"
+        :OpenOnFocus="true"
         class="app-titlebar-search"
-        @QuerySubmitted="handleSearchSubmit" />
+        @QuerySubmitted="onSearchQuerySubmitted" />
     </WinTitleBar>
     <div class="app-content wco-titlebar">
       <div class="nav-host">
@@ -42,6 +47,7 @@ import WinTitleBar from './components/WinTitleBar.vue'
 import WinNavigationView from './components/WinNavigationView.vue'
 import WinAutoSuggestBox from './components/WinAutoSuggestBox.vue'
 import { createAppI18n } from './i18n'
+import { searchDocs } from './utils/searchIndex'
 
 const route = useRoute()
 const router = useRouter()
@@ -108,13 +114,31 @@ const handleNavClick = (args: { InvokedItemContainer: any }) => {
   }
 }
 
-const handleSearchSubmit = (args: { QueryText: string; ChosenSuggestion: any }) => {
-  const query = args.QueryText?.toLowerCase() || ''
-  if (query.includes('学习') || query.includes('study')) {
-    router.push('/doc/study')
-  } else if (query.includes('生活') || query.includes('life')) {
-    router.push('/doc/life')
+const searchQuery = ref('')
+const searchResults = computed(() => {
+  const query = searchQuery.value.trim()
+  if (!query) return []
+  const locale = localStorage.getItem('locale') || navigator.language
+  const results = searchDocs(query, locale)
+  if (results.length === 0) {
+    return [{ title: t('search.noResults'), subtitle: '', path: '' }]
   }
+  return results
+})
+
+const onSearchQuerySubmitted = (args: { QueryText: string; ChosenSuggestion: any }) => {
+  const query = String(args.QueryText ?? '').trim()
+  if (!query) return
+  if (args.ChosenSuggestion?.path) {
+    router.push(args.ChosenSuggestion.path)
+    return
+  }
+
+  // const locale = localStorage.getItem('locale') || navigator.language
+  // const results = searchDocs(query, locale)
+  // if (results.length > 0) {
+  //   router.push(results[0].path)
+  // }
 }
 </script>
 

@@ -10,6 +10,7 @@ export default {
   'home.study.desc': 'Subject selection, learning resources, mental health, study strategies',
   'home.life.desc': 'Teachers, rules, friends, dating, parents, activities, tips',
   'search.placeholder': 'Search docs...',
+  'search.noResults': 'No results found',
   'about.title': 'About',
   'about.project': 'Project',
   'about.project.desc': 'This project provides a practical survival guide for new students at Jianping High School, covering both study and life aspects.',
