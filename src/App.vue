@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, provide, watch } from 'vue'
+import { ref, computed, onMounted, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import WinThemeWrapper from './components/WinThemeWrapper.vue'
 import WinTitleBar from './components/WinTitleBar.vue'
@@ -45,16 +45,8 @@ provide('appTheme', theme)
 provide('setAppTheme', (v: 'light' | 'dark' | 'system') => {
   theme.value = v
   localStorage.setItem('theme', v)
+  location.reload()
 })
-
-function applyTheme(mode: string) {
-  const html = document.documentElement
-  html.classList.remove('theme-light', 'theme-dark')
-  if (mode === 'light') html.classList.add('theme-light')
-  else if (mode === 'dark') html.classList.add('theme-dark')
-}
-
-watch(theme, (val) => applyTheme(val), { immediate: true })
 
 const currentRoute = computed(() => {
   const path = route.path
