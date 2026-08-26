@@ -62,12 +62,13 @@
 <script setup>
 import { computed, useSlots } from 'vue';
 import WinTextBlock from './WinTextBlock.vue';
+import { IconGlyphs } from '../utils/iconGlyphs';
 
 const props = defineProps({
   Header: { type: [String, Number], default: '' },
   Description: { type: [String, Number], default: '' },
   HeaderIcon: { type: String, default: '' },
-  ActionIcon: { type: String, default: '\uE974' },
+  ActionIcon: { type: String, default: IconGlyphs.ChevronRight },
   ActionIconToolTip: { type: String, default: '' },
   IsClickEnabled: { type: Boolean, default: false },
   ContentAlignment: { type: String, default: 'Right' },

@@ -6,7 +6,7 @@
         <div class="win-nav-indicator" :style="indicatorStyle"></div>
       </div>
       <button v-if="showBackButtonResolved" class="win-nav-back-button" :disabled="!canGoBack" :aria-label="t('text.back')" v-bind="{ 'tooltipservice.tooltip': t('text.back') }" @click="onBackClick" @mousedown="onBackDown" @mouseup="onBackUp" @mouseleave="onBackLeave" ref="topBackButtonRef">
-        <span class="icon animated-icon animated-icon-back" :class="backClass" @animationend="onBackAnimEnd">&#xE72B;</span>
+        <span class="icon animated-icon animated-icon-back" :class="backClass" @animationend="onBackAnimEnd">&#xF15C;</span>
       </button>
       <div v-if="$slots.PaneHeader" class="win-nav-top-fixed win-nav-top-pane-header"><slot name="PaneHeader"></slot></div>
       <WinTextBlock v-else-if="paneTitle && !isPaneToggleButtonVisible" class="win-nav-top-fixed win-nav-top-pane-title" :Text="paneTitle" />
@@ -31,7 +31,7 @@
           </div>
         </template>
         <div v-if="topOverflowMenuItems.length" class="win-nav-item win-nav-more-button" role="button" tabindex="0" :aria-label="t('text.more')" v-bind="{ 'tooltipservice.tooltip': t('text.more') }" @click="toggleMoreFlyout" ref="moreButtonRef">
-          <span class="icon">&#xE712;</span>
+          <span class="icon">&#xE825;</span>
           <WinTextBlock v-if="officialProps.OverflowLabelMode === 'MoreLabel'" class="label" :Text="t('text.more')" />
         </div>
       </div>
@@ -61,22 +61,22 @@
             <span v-if="item.icon" class="icon">{{ item.icon }}</span>
             <WinTextBlock class="label" :Text="item.label" />
             <WinInfoBadge v-if="item.infoBadge" class="win-nav-infobadge" v-bind="item.infoBadge" />
-            <span v-if="item.children" class="icon win-nav-group-chevron">&#xE70D;</span>
+            <span v-if="item.children" class="icon win-nav-group-chevron">&#xF294;</span>
           </div>
         </template>
         <div class="win-nav-item win-nav-more-button" data-value="__more">
-          <span class="icon">&#xE712;</span>
+          <span class="icon">&#xE825;</span>
           <WinTextBlock v-if="officialProps.OverflowLabelMode === 'MoreLabel'" class="label" :Text="t('text.more')" />
         </div>
       </div>
     </nav>
     <nav v-else class="win-nav-left-panel" :class="['win-nav-left-panel', { 'is-compact': isCompact, 'is-closed-compact': isClosedCompact, 'is-minimal': isLeftMinimalMode, 'has-back-button': showBackButtonInLeftNav, 'has-pane-toggle-button': isPaneToggleButtonVisible }, paneTransition ? `is-pane-${paneTransition}` : '']" :style="paneStyle" ref="navRef" @keydown="onNavigationKeydown" @focusin="onNavigationFocusIn" @pointerdown.capture="onNavigationPointerDown" @touchstart.capture="onNavigationPointerDown">
       <button v-if="showBackButtonInLeftNav" class="win-nav-back-button" :disabled="!canGoBack" :aria-label="t('text.back')" v-bind="{ 'tooltipservice.tooltip': t('text.back') }" @click="onBackClick" @mousedown="onBackDown" @mouseup="onBackUp" @mouseleave="onBackLeave">
-        <span class="icon animated-icon animated-icon-back" :class="backClass" @animationend="onBackAnimEnd">&#xE72B;</span>
+        <span class="icon animated-icon animated-icon-back" :class="backClass" @animationend="onBackAnimEnd">&#xF15C;</span>
       </button>
       <div v-if="isPaneToggleButtonVisible" class="win-nav-pane-command-row">
         <button v-if="isPaneToggleButtonVisible" class="win-nav-hamburger" :class="{ 'has-pane-title': paneTitle && paneTitleSpaceVisible }" :aria-label="paneToggleLabel" v-bind="{ 'tooltipservice.tooltip': paneToggleLabel }" @click="toggleCompact" @mousedown="onHamburgerDown" @mouseup="onHamburgerUp" @mouseleave="onHamburgerLeave">
-          <span class="icon animated-icon animated-icon-hamburger" :class="hamburgerClass" @animationend="onHamburgerAnimEnd">&#xE700;</span>
+          <span class="icon animated-icon animated-icon-hamburger" :class="hamburgerClass" @animationend="onHamburgerAnimEnd">&#xF561;</span>
           <WinTextBlock v-if="paneTitle && showPaneTitle" class="win-nav-pane-title" :Text="paneTitle" />
         </button>
       </div>
@@ -92,7 +92,7 @@
           <div class="win-nav-pane-search">
             <div v-show="!isClosedCompact" class="win-nav-pane-search-presenter" ref="paneAutoSuggestPresenterRef"><slot name="AutoSuggestBox"></slot></div>
             <button v-show="isClosedCompact" class="win-nav-pane-search-button" :aria-label="t('text.search')" v-bind="{ 'tooltipservice.tooltip': t('text.search') }" @click="onPaneSearchButtonClick">
-              <span class="icon">&#xE721;</span>
+              <span class="icon">&#xF690;</span>
             </button>
           </div>
         </div>
@@ -121,7 +121,7 @@
                   <span v-if="item.icon" class="icon">{{ item.icon }}</span>
                   <WinTextBlock class="label" :Text="item.label" />
                   <WinInfoBadge v-if="item.infoBadge" class="win-nav-infobadge" v-bind="item.infoBadge" />
-                  <span class="icon win-nav-group-chevron" :class="groupChevronClass(item.value)" @click.stop="onGroupChevronClick(item)">&#xE70D;</span>
+                  <span class="icon win-nav-group-chevron" :class="groupChevronClass(item.value)" @click.stop="onGroupChevronClick(item)">&#xF294;</span>
                 </div>
                 <div
                   class="win-nav-group-children"
@@ -181,7 +181,7 @@
               <span v-if="item.icon" class="icon">{{ item.icon }}</span>
               <WinTextBlock class="label" :Text="item.label" />
               <WinInfoBadge v-if="item.infoBadge" class="win-nav-infobadge" v-bind="item.infoBadge" />
-              <span class="icon win-nav-group-chevron" :class="groupChevronClass(item.value)" @click.stop="onMoreGroupChevronClick(item)">&#xE70D;</span>
+              <span class="icon win-nav-group-chevron" :class="groupChevronClass(item.value)" @click.stop="onMoreGroupChevronClick(item)">&#xF294;</span>
             </div>
             <div class="win-nav-group-children" :style="{ height: groupExpanded[item.value] ? ((item.children?.length || 0) * 36) + 'px' : '0px' }">
               <div class="win-nav-group-children-inner">
@@ -209,6 +209,7 @@ import {
   createEntranceNavigationTransitionInfo,
   createSlideNavigationTransitionInfo
 } from '../utils/navigationTransitionInfo';
+import { IconGlyphs } from '../utils/iconGlyphs';
 
 const { t } = useI18n();
 const slots = useSlots();
@@ -370,7 +371,7 @@ const props = {
   get header() { return officialProps.Header; },
   get settingsValue() { return 'settings'; },
   get settingsLabel() { return t('text.settings'); },
-  get settingsIcon() { return '\uE713'; }
+  get settingsIcon() { return IconGlyphs.Settings; }
 };
 
 const resolvedSettingsLabel = computed(() => props.settingsLabel);

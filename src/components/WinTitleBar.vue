@@ -23,7 +23,7 @@
       :IsBackButtonEnabled="canGoBack"
       :IsPaneToggleButtonVisible="true"
       TitleBarContentHorizontalAlignment="Stretch"
-      :IconSource="{ Glyph: '\\uE72B' }"
+      :IconSource="{ Glyph: '\\uF15C' }"
       @BackRequested="onBack"
       @PaneToggleRequested="onPaneToggle">
       <WinAutoSuggestBox ... />
@@ -52,7 +52,7 @@
         class="icon animated-icon animated-icon-back"
         :class="backClass"
         aria-hidden="true"
-        @animationend="onBackAnimEnd">&#xE72B;</span>
+        @animationend="onBackAnimEnd">&#xF15C;</span>
     </button>
 
     <button
@@ -70,7 +70,7 @@
         class="icon animated-icon animated-icon-hamburger"
         :class="hamburgerClass"
         aria-hidden="true"
-        @animationend="onHamburgerAnimEnd">&#xE700;</span>
+        @animationend="onHamburgerAnimEnd">&#xF561;</span>
     </button>
 
     <div v-if="$slots.LeftHeader" class="win-titlebar-left-header" :style="leftHeaderStyle">
@@ -121,6 +121,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, useSlots, watch } 
 import WinTextBlock from './WinTextBlock.vue';
 import { useI18n } from './i18n/index';
 import { clearIsDragRegion, getIsDragRegion, setIsDragRegion } from './winTitleBarDragRegion';
+import { IconGlyphs } from '../utils/iconGlyphs';
 
 const { t } = useI18n();
 const slots = useSlots();
@@ -287,13 +288,13 @@ const decodeGlyph = (value) => {
 };
 
 const symbolGlyphs = {
-  Accept: '\uE8FB',
-  Cancel: '\uE711',
-  Home: '\uE80F',
-  Refresh: '\uE72C',
-  Find: '\uE721',
-  Settings: '\uE713',
-  Favorite: '\uE734'
+  Accept: IconGlyphs.Checkmark,
+  Cancel: IconGlyphs.Dismiss,
+  Home: IconGlyphs.Home,
+  Refresh: IconGlyphs.ArrowClockwise,
+  Find: IconGlyphs.Search,
+  Settings: IconGlyphs.Settings,
+  Favorite: IconGlyphs.Heart
 };
 
 const iconSourceObject = computed(() => (

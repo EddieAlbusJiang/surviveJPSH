@@ -31,6 +31,7 @@
           IsBackButtonVisible="Collapsed"
           :IsPaneToggleButtonVisible="false"
           :IsBackEnabled="canGoBack"
+          :OpenPaneLength="240"
           @ItemInvoked="handleNavClick">
           <router-view />
         </WinNavigationView>
@@ -48,6 +49,7 @@ import WinNavigationView from './components/WinNavigationView.vue'
 import WinAutoSuggestBox from './components/WinAutoSuggestBox.vue'
 import { createAppI18n } from './i18n'
 import { searchDocs } from './utils/searchIndex'
+import { IconGlyphs } from './utils/iconGlyphs'
 
 const route = useRoute()
 const router = useRouter()
@@ -55,7 +57,7 @@ const router = useRouter()
 const i18n = createAppI18n(localStorage.getItem('locale') || navigator.language)
 const t = i18n.t
 
-const appIcon = '\uE80F'
+const appIcon = IconGlyphs.Home
 
 const theme = ref<'light' | 'dark' | 'system'>(
   (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system'
@@ -91,20 +93,20 @@ const currentRoute = computed(() => {
 })
 
 const menuItems = computed(() => [
-  { value: '/', label: t('nav.home'), icon: '\uE80F' },
+  { value: '/', label: t('nav.home'), icon: IconGlyphs.Home },
   {
     label: t('nav.docs'),
-    icon: '\uE943',
+    icon: IconGlyphs.Library,
     children: [
-      { value: '/doc/study', label: t('nav.study') },
-      { value: '/doc/life', label: t('nav.life') },
+      { value: '/doc/study', label: t('nav.study'), icon: IconGlyphs.Pen},
+      { value: '/doc/life', label: t('nav.life'), icon: IconGlyphs.Life},
     ]
   },
 ])
 
 const footerItems = computed(() => [
-  { value: '/settings', label: t('nav.settings'), icon: '\uE713' },
-  { value: '/about', label: t('nav.about'), icon: '\uE946' },
+  { value: '/settings', label: t('nav.settings'), icon: IconGlyphs.Settings },
+  { value: '/about', label: t('nav.about'), icon: IconGlyphs.Info },
 ])
 
 const handleNavClick = (args: { InvokedItemContainer: any }) => {

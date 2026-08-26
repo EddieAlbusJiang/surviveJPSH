@@ -124,6 +124,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { CSSProperties } from 'vue';
 import WinMenuFlyout from './WinMenuFlyout.vue';
 import { useI18n } from './i18n/index';
+import { IconGlyphs } from '../utils/iconGlyphs';
 
 const { t } = useI18n();
 
@@ -325,24 +326,24 @@ const contextMenuItems = computed<TextBoxMenuItem[]>(() => {
   const canPaste = canEdit && clipboardText.value.length > 0;
 
   if (hasSelection) {
-    if (canEdit) items.push({ Text: t('text.cut'), Icon: '\uE8C6', Value: 'cut' });
-    items.push({ Text: t('text.copy'), Icon: '\uE8C8', Value: 'copy' });
+    if (canEdit) items.push({ Text: t('text.cut'), Icon: IconGlyphs.Cut, Value: 'cut' });
+    items.push({ Text: t('text.copy'), Icon: IconGlyphs.Copy, Value: 'copy' });
   }
 
   if (canPaste) {
-    items.push({ Text: t('text.paste'), Icon: '\uE77F', Value: 'paste' });
+    items.push({ Text: t('text.paste'), Icon: IconGlyphs.ClipboardPaste, Value: 'paste' });
   }
 
   if (canUndo.value) {
-    items.push({ Text: t('text.undo'), Icon: '\uE7A7', Value: 'undo' });
+    items.push({ Text: t('text.undo'), Icon: IconGlyphs.ArrowUndo, Value: 'undo' });
   }
 
   if (canRedo.value) {
-    items.push({ Text: t('text.redo'), Icon: '\uE7A6', Value: 'redo' });
+    items.push({ Text: t('text.redo'), Icon: IconGlyphs.ArrowRedo, Value: 'redo' });
   }
 
   if (hasText) {
-    items.push({ Text: t('text.select-all'), Icon: '\uE8B3', Value: 'selectAll' });
+    items.push({ Text: t('text.select-all'), Icon: IconGlyphs.SelectAll, Value: 'selectAll' });
   }
 
   return items;

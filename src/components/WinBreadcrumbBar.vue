@@ -25,14 +25,14 @@
           @keydown="OnItemKeyDown($event, ELLIPSIS_INDEX)">
           <WinTextBlock
             class="win-breadcrumb-ellipsis-glyph icon"
-            Text="&#xE712;"
-            FontFamily="var(--SymbolThemeFontFamily, 'Segoe Fluent Icons')"
+            Text="&#xE825;"
+            FontFamily="var(--SymbolThemeFontFamily, 'WinUIOnWebIcons')"
             :IsTextScaleFactorEnabled="false" />
         </WinButton>
         <WinTextBlock
           class="win-breadcrumb-chevron icon"
           :Text="ChevronGlyph"
-          FontFamily="var(--SymbolThemeFontFamily, 'Segoe Fluent Icons')"
+          FontFamily="var(--SymbolThemeFontFamily, 'WinUIOnWebIcons')"
           FontSize="12"
           :IsTextScaleFactorEnabled="false"
           aria-hidden="true" />
@@ -107,7 +107,7 @@
           v-if="Index < Items.length - 1"
           class="win-breadcrumb-chevron icon"
           :Text="ChevronGlyph"
-          FontFamily="var(--SymbolThemeFontFamily, 'Segoe Fluent Icons')"
+          FontFamily="var(--SymbolThemeFontFamily, 'WinUIOnWebIcons')"
           FontSize="12"
           :IsTextScaleFactorEnabled="false"
           aria-hidden="true" />
@@ -159,6 +159,7 @@ import WinButton from './WinButton.vue';
 import WinMenuFlyout from './WinMenuFlyout.vue';
 import WinTextBlock from './WinTextBlock.vue';
 import { useI18n } from './i18n/index';
+import { IconGlyphs } from '../utils/iconGlyphs';
 
 const ELLIPSIS_INDEX = -1;
 
@@ -213,7 +214,7 @@ const effectiveFlowDirection = computed(() => {
   return inheritedFlowDirection.value;
 });
 
-const ChevronGlyph = computed(() => effectiveFlowDirection.value === 'rtl' ? '\uE973' : '\uE974');
+const ChevronGlyph = computed(() => effectiveFlowDirection.value === 'rtl' ? IconGlyphs.ChevronLeft : IconGlyphs.ChevronRight);
 const visibleItemsCount = computed(() => Math.max(0, Items.value.length - firstRenderedItemIndex.value));
 const HiddenItems = computed(() => Items.value
   .slice(0, firstRenderedItemIndex.value)

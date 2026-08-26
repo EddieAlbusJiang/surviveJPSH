@@ -48,6 +48,7 @@
 import { Teleport, computed, defineComponent, h, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import WinScrollViewer from './WinScrollViewer.vue';
 import WinTextBlock from './WinTextBlock.vue';
+import { IconGlyphs } from '../utils/iconGlyphs';
 
 const props = defineProps({
   Open: Boolean,
@@ -320,7 +321,7 @@ const MenuFlyoutItems = defineComponent({
           class: 'win-menu-flyout-leading-slot win-menu-flyout-check-slot',
           'aria-hidden': true
         }, isCheckItem && isItemChecked(item)
-          ? h('span', { class: 'icon win-menu-flyout-check' }, kind === 'RadioMenuFlyoutItem' ? '\uE915' : '\uE73E')
+          ? h('span', { class: 'icon win-menu-flyout-check' }, kind === 'RadioMenuFlyoutItem' ? IconGlyphs.Circle : IconGlyphs.Checkmark)
           : null));
       }
       if (containsIconItems.value) {
@@ -403,7 +404,7 @@ const MenuFlyoutItems = defineComponent({
                 Foreground: itemForeground,
                 Text: text
               }),
-              h('span', { class: 'icon win-menu-flyout-chevron' }, '\uE974')
+              h('span', { class: 'icon win-menu-flyout-chevron' }, IconGlyphs.ChevronRight)
             ])
           ]);
         }
@@ -445,7 +446,7 @@ const MenuFlyoutItems = defineComponent({
           h('span', {
             class: 'icon win-menu-flyout-chevron',
             'aria-hidden': true
-          }, '\uE974')
+          }, IconGlyphs.ChevronRight)
         ]);
       }
 
@@ -722,9 +723,9 @@ const estimateFlyoutWidth = (items) => {
 };
 const getItemKind = (item) => item?.Kind ?? (item?.Items ? 'MenuFlyoutSubItem' : '');
 const commandGlyphs = {
-  Cut: '\uE8C6', Copy: '\uE8C8', Paste: '\uE77F', SelectAll: '\uE8B3', Delete: '\uE74D',
-  Share: '\uE72D', Save: '\uE74E', OpenFile: '\uE8E5', Cancel: '\uE711', Pause: '\uE769',
-  Play: '\uE768', Stop: '\uE71A', Forward: '\uE72A', Back: '\uE72B', Undo: '\uE7A7', Redo: '\uE7A6'
+  Cut: IconGlyphs.Cut, Copy: IconGlyphs.Copy, Paste: IconGlyphs.ClipboardPaste, SelectAll: IconGlyphs.SelectAll, Delete: IconGlyphs.Delete,
+  Share: IconGlyphs.Share, Save: IconGlyphs.Save, OpenFile: IconGlyphs.FolderOpen, Cancel: IconGlyphs.Dismiss, Pause: IconGlyphs.Pause,
+  Play: IconGlyphs.Play, Stop: IconGlyphs.Stop, Forward: IconGlyphs.ArrowForward, Back: IconGlyphs.ArrowLeft, Undo: IconGlyphs.ArrowUndo, Redo: IconGlyphs.ArrowRedo
 };
 const getCommandIcon = (source) => {
   if (typeof source === 'string') return source;
@@ -1120,7 +1121,7 @@ const isItemChecked = (item) => Boolean(item?.IsChecked);
 .win-menu-flyout-icon,
 .win-menu-flyout-check,
 .win-menu-flyout-chevron {
-  font-family: 'Segoe Fluent Icons', 'Segoe MDL2 Assets', sans-serif;
+  font-family: var(--SymbolThemeFontFamily, 'WinUIOnWebIcons'), sans-serif;
 }
 
 .win-menu-flyout-icon {

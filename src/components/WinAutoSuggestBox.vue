@@ -88,6 +88,7 @@ import type { ComputedRef, CSSProperties } from 'vue';
 import WinScrollViewer from './WinScrollViewer.vue';
 import WinTextBox from './WinTextBox.vue';
 import { useFlyoutAnimation } from './useFlyoutAnimation';
+import { IconGlyphs } from '../utils/iconGlyphs';
 
 const { t } = useI18n();
 
@@ -165,7 +166,7 @@ const anchorTheme = ref<'light' | 'dark' | ''>('');
 const isOpen = computed(() => localOpen.value && props.IsEnabled);
 const suggestionItems = computed(() => props.ItemsSource ?? []);
 const currentText = computed(() => props.Text ?? localText.value);
-const resolvedQueryIcon = computed(() => props.QueryIcon === 'Find' ? '\uE721' : props.QueryIcon);
+const resolvedQueryIcon = computed(() => props.QueryIcon === 'Find' ? IconGlyphs.Search : props.QueryIcon);
 const localizedNoResultsText = computed(() => t('text.no-results-found'));
 const popupThemeClass = computed(() => {
   const theme = inheritedTheme?.value || anchorTheme.value;

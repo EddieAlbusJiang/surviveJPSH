@@ -33,6 +33,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, watch } from 'vue';
 import WinTextBlock from './WinTextBlock.vue';
 import { useI18n } from './i18n/index';
+import { IconGlyphs } from '../utils/iconGlyphs';
 
 defineOptions({
   inheritAttrs: false
@@ -84,9 +85,9 @@ const styleIconSource = computed(() => {
 
   switch (styleKind.value) {
     case 'Attention':
-      return { Glyph: '\uEA38' };
+      return { Glyph: IconGlyphs.Alert };
     case 'Informational':
-      return { Glyph: '\uF13F' };
+      return { Glyph: IconGlyphs.Info };
     case 'Success':
       return { Symbol: 'Accept' };
     case 'Caution':
@@ -101,13 +102,13 @@ const styleIconSource = computed(() => {
 const resolvedIconSource = computed(() => props.IconSource ?? styleIconSource.value);
 
 const symbolGlyphs = {
-  Accept: '\uE8FB',
-  Cancel: '\uE711',
-  Important: '\uE7BA',
-  Sync: '\uE895',
-  Mail: '\uE715',
-  Contact: '\uE77B',
-  Home: '\uE80F'
+  Accept: IconGlyphs.Checkmark,
+  Cancel: IconGlyphs.Dismiss,
+  Important: IconGlyphs.Warning,
+  Sync: IconGlyphs.ArrowSync,
+  Mail: IconGlyphs.Mail,
+  Contact: IconGlyphs.Person,
+  Home: IconGlyphs.Home
 };
 
 const decodeGlyph = (value) => {

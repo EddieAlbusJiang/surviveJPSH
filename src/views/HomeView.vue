@@ -6,12 +6,12 @@
     </div>
     <div class="home-cards">
       <div class="doc-card" @click="router.push('/doc/study')">
-        <div class="card-icon">&#xE943;</div>
+        <div class="card-icon">{{IconGlyphs.Pen}}</div>
         <h2 class="card-title">{{ t('nav.study') }}</h2>
         <p class="card-desc">{{ t('home.study.desc') }}</p>
       </div>
       <div class="doc-card" @click="router.push('/doc/life')">
-        <div class="card-icon">&#xE80F;</div>
+        <div class="card-icon">{{IconGlyphs.Life}}</div>
         <h2 class="card-title">{{ t('nav.life') }}</h2>
         <p class="card-desc">{{ t('home.life.desc') }}</p>
       </div>
@@ -22,6 +22,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { createAppI18n } from '../i18n'
+import { IconGlyphs } from '../utils/iconGlyphs'
 
 const router = useRouter()
 const { t } = createAppI18n(localStorage.getItem('locale') || navigator.language)

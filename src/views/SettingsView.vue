@@ -21,7 +21,7 @@
             <WinSettingsCard
               :Header="t('settings.theme')"
               :Description="t('settings.theme.desc')"
-              HeaderIcon="&#xE771;"
+              HeaderIcon="&#xF45B;"
               :Height="70">
               <WinComboBox
                 v-model:SelectedValue="themeValue"
@@ -32,7 +32,7 @@
             <WinSettingsCard
               :Header="t('settings.language')"
               :Description="t('settings.language.desc')"
-              HeaderIcon="&#xE774;"
+              HeaderIcon="&#xF2E6;"
               :Height="70">
               <WinComboBox
                 v-model:SelectedValue="languageValue"
