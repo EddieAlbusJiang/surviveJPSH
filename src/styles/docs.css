@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'WinUIOnWebIcons';
-  src: url('../assets/Fonts/FluentSystemIcons-Regular.ttf') format('truetype');
+  src: url('../assets/Fonts/FluentSystemIcons-Regular.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: block;
