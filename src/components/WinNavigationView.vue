@@ -106,38 +106,11 @@
           HorizontalScrollBarVisibility="Disabled"
           @ViewChanged="onScroll">
           <div class="win-nav-menu">
-            <template v-for="item in menuItems" :key="item.value">
-              <div v-if="item.type === 'Header'" class="win-nav-item-header">
-                <WinTextBlock :Text="item.label" />
-              </div>
-              <div v-else-if="item.type === 'Separator'" class="win-nav-item-separator"></div>
-              <div v-else-if="!item.children" class="win-nav-item" role="button" :class="{ 'is-selected': selectedValue === item.value, 'is-disabled': !item.isEnabled }" :aria-disabled="!item.isEnabled || undefined" v-bind="itemToolTipAttrs(item)" @click="onItemClick(item)" :ref="el => setItemRef(item.value, el)">
-                <span v-if="item.icon" class="icon">{{ item.icon }}</span>
-                <WinTextBlock class="label" :Text="item.label" />
-                <WinInfoBadge v-if="item.infoBadge" class="win-nav-infobadge" v-bind="item.infoBadge" />
-              </div>
-              <div v-else class="win-nav-group" :class="{ 'is-expanded': groupExpanded[item.value] && isPaneGroupChildrenVisible, 'is-child-selected': isChildOfGroup(item) }">
-                <div class="win-nav-item win-nav-group-header" role="button" :class="{ 'is-selected': item.selectsOnInvoked !== false && selectedValue === item.value, 'is-disabled': !item.isEnabled }" :aria-disabled="!item.isEnabled || undefined" v-bind="itemToolTipAttrs(item)" @click="onGroupHeaderClick(item)" :ref="el => setItemRef(item.value, el)">
-                  <span v-if="item.icon" class="icon">{{ item.icon }}</span>
-                  <WinTextBlock class="label" :Text="item.label" />
-                  <WinInfoBadge v-if="item.infoBadge" class="win-nav-infobadge" v-bind="item.infoBadge" />
-                  <span class="icon win-nav-group-chevron" :class="groupChevronClass(item.value)" @click.stop="onGroupChevronClick(item)">&#xF2A6;</span>
-                </div>
-                <div
-                  class="win-nav-group-children"
-                  :style="{ height: groupExpanded[item.value] && isPaneGroupChildrenVisible ? (groupHeights[item.value] || 0) + 'px' : '0px' }"
-                  :aria-hidden="isPaneGroupChildrenVisible ? undefined : 'true'"
-                  :inert="isPaneGroupChildrenVisible ? undefined : ''">
-                  <div class="win-nav-group-children-inner" :ref="el => setChildrenRef(item.value, el)">
-                    <div v-for="child in item.children" :key="child.value" class="win-nav-item win-nav-group-child" role="button" :class="{ 'is-selected': selectedValue === child.value, 'is-disabled': !child.isEnabled }" :aria-disabled="!child.isEnabled || undefined" v-bind="itemToolTipAttrs(child)" @click="onChildClick(item, child)" :ref="el => setItemRef(child.value, el)">
-                      <span v-if="child.icon" class="icon">{{ child.icon }}</span>
-                      <WinTextBlock class="label" :Text="child.label" />
-                      <WinInfoBadge v-if="child.infoBadge" class="win-nav-infobadge" v-bind="child.infoBadge" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </template>
+            <WinNavigationViewItem
+              v-for="item in menuItems"
+              :key="item.value"
+              :item="item"
+              :depth="0" />
           </div>
         </WinScrollViewer>
         <div class="win-nav-footer">
@@ -199,11 +172,13 @@
   </div>
 </template>
 <script setup>
-import { ref, reactive, computed, getCurrentInstance, onMounted, onBeforeUnmount, watch, nextTick, useSlots, toRaw } from 'vue';
+import { ref, reactive, computed, getCurrentInstance, onMounted, onBeforeUnmount, watch, nextTick, useSlots, toRaw, provide } from 'vue';
 import WinMenuFlyout from './WinMenuFlyout.vue';
 import WinScrollViewer from './WinScrollViewer.vue';
 import WinInfoBadge from './WinInfoBadge.vue';
 import WinTextBlock from './WinTextBlock.vue';
+import WinNavigationViewItem from './WinNavigationViewItem.vue';
+import { winNavigationItemContextKey } from './winNavigationContext';
 import { useI18n } from './i18n/index';
 import {
   createEntranceNavigationTransitionInfo,
@@ -324,7 +299,7 @@ const normalizeItem = (item, fallbackKey = 'item') => {
     automationName: item?.['AutomationProperties.Name'] ?? item?.AutomationProperties?.Name ?? '',
     tooltip: item?.ToolTip ?? item?.Tooltip ?? item?.tooltip ?? '',
     type,
-    children: Array.isArray(children)
+    children: Array.isArray(children) && children.length
       ? children.map((child, index) => normalizeItem(child, `${fallbackKey}-${index}`))
       : null,
     isEnabled: (item?.IsEnabled ?? item?.isEnabled ?? !(item?.Disabled ?? item?.disabled ?? false)) !== false,
@@ -339,8 +314,17 @@ const menuItems = computed(() => resolveItems(officialProps.MenuItems, officialP
 const footerItems = computed(() => resolveItems(officialProps.FooterMenuItems, officialProps.FooterMenuItemsSource)
   .map((item, index) => normalizeItem(item, `footer-${index}`)));
 const internalSelectedItem = ref(officialProps.SelectedItem);
-const flattenedItems = computed(() => [...menuItems.value, ...footerItems.value]
-  .flatMap(item => [item, ...(item.children || [])]));
+const flattenedItems = computed(() => {
+  const flat = [];
+  const walk = (items) => {
+    for (const item of items) {
+      flat.push(item);
+      if (item.children) walk(item.children);
+    }
+  };
+  walk([...menuItems.value, ...footerItems.value]);
+  return flat;
+});
 const resolveSelectedValue = (selectedItem) => {
   if (selectedItem?.IsSettingsItem || getItemTag(selectedItem) === 'settings') return 'settings';
   if (selectedItem && typeof selectedItem === 'object') {
@@ -748,19 +732,22 @@ const nextIndicatorAnimation = (indicatorEl) => {
 
 const childParentMap = computed(() => {
   const map = {};
-  for (const item of props.menuItems) {
-    if (item.children) {
+  const walk = (items) => {
+    for (const item of items) {
+      if (!item.children) continue;
       for (const child of item.children) {
         map[child.value] = item.value;
       }
+      walk(item.children);
     }
-  }
+  };
+  walk(props.menuItems);
   return map;
 });
 
 const selectedTopRootValue = computed(() => {
-  const parentGroup = findParentGroup(props.selectedValue);
-  if (parentGroup) return parentGroup.value;
+  const ancestorGroups = findAncestorGroups(props.selectedValue);
+  if (ancestorGroups.length) return ancestorGroups[ancestorGroups.length - 1].value;
   return props.menuItems.some(item => item.value === props.selectedValue) ? props.selectedValue : null;
 });
 
@@ -844,17 +831,55 @@ const isChildOfGroup = (groupItem) => {
   return groupItem.children.some(c => c.value === props.selectedValue);
 };
 
+const isDescendantOfGroup = (groupItem) => {
+  if (!groupItem.children) return false;
+  return groupItem.children.some(c => (
+    c.value === props.selectedValue || isDescendantOfGroup(c)
+  ));
+};
+
 const findParentGroup = (val) => {
-  return props.menuItems.find(item => item.children && item.children.some(c => c.value === val));
+  const search = (items) => {
+    for (const item of items) {
+      if (item.children && item.children.some(c => c.value === val)) return item;
+      const found = search(item.children || []);
+      if (found) return found;
+    }
+    return null;
+  };
+  return search(props.menuItems);
 };
 
 const findNormalizedItem = (value) => {
-  for (const item of [...props.menuItems, ...props.footerItems]) {
-    if (item.value === value) return item;
-    const child = item.children?.find(entry => entry.value === value);
-    if (child) return child;
-  }
-  return null;
+  const search = (items) => {
+    for (const item of items) {
+      if (item.value === value) return item;
+      const found = search(item.children || []);
+      if (found) return found;
+    }
+    return null;
+  };
+  return search([...props.menuItems, ...props.footerItems]);
+};
+
+const findAncestorGroups = (value) => {
+  const ancestors = [];
+  const search = (items) => {
+    for (const item of items) {
+      if (!item.children) continue;
+      if (item.children.some(c => c.value === value)) {
+        ancestors.push(item);
+        return true;
+      }
+      if (search(item.children)) {
+        ancestors.push(item);
+        return true;
+      }
+    }
+    return false;
+  };
+  search(props.menuItems);
+  return ancestors;
 };
 
 const createSettingsItem = () => ({
@@ -956,7 +981,10 @@ const Expand = (item) => {
   emit('Expanding', { ExpandingItemContainer: normalizedItem.source, ExpandingItem: normalizedItem.source });
   delete manuallyCollapsedGroups[value];
   groupExpanded[value] = true;
-  nextTick(() => measureGroup(value));
+  // Measure the group's own inner content (stable regardless of the container's
+  // animation state), then grow every expanded ancestor by the same delta.
+  measureGroup(value);
+  propagateHeightDelta(value, groupHeights[value] || 0);
 };
 
 const Collapse = (item) => {
@@ -965,6 +993,7 @@ const Collapse = (item) => {
   if (!normalizedItem?.children || !groupExpanded[value]) return;
   manuallyCollapsedGroups[value] = true;
   groupExpanded[value] = false;
+  propagateHeightDelta(value, -(groupHeights[value] || 0));
   emit('Collapsed', { CollapsedItemContainer: normalizedItem.source, CollapsedItem: normalizedItem.source });
 };
 
@@ -995,10 +1024,59 @@ const measureGroup = (value) => {
   }
 };
 
-const measureAllGroups = () => {
-  for (const item of props.menuItems) {
-    if (item.children) measureGroup(item.value);
+// Ancestor container heights cannot be re-read from the DOM right after a
+// nested group toggles: Vue flushes the child's height change to the layout in
+// a later frame, so a same-tick read sees the stale (transition-start) height,
+// which inverts the animation. Instead of measuring, propagate the child's
+// height delta up the ancestor chain. A collapsed ancestor contributes zero to
+// its own parent, so the climb stops at the first collapsed group.
+const propagateHeightDelta = (value, delta) => {
+  if (!delta) return;
+  let parent = findParentGroup(value);
+  while (parent) {
+    groupHeights[parent.value] = Math.max(0, (groupHeights[parent.value] || 0) + delta);
+    if (!groupExpanded[parent.value]) return;
+    parent = findParentGroup(parent.value);
   }
+};
+
+// Expand every collapsed ancestor of a value (deepest first) and keep all
+// ancestor heights in sync without relying on mid-transition DOM reads.
+const expandAncestorGroups = (value) => {
+  const ancestors = findAncestorGroups(value);
+  const newlyExpanded = ancestors.filter(group => !groupExpanded[group.value]);
+  if (!newlyExpanded.length) return;
+  for (const group of newlyExpanded) {
+    delete manuallyCollapsedGroups[group.value];
+    groupExpanded[group.value] = true;
+  }
+  // Deepest first: each newly expanded group contributes its own full height to
+  // the ancestors above it. The climb stops at a sibling that is also being
+  // expanded in this pass, because that sibling propagates its own (now larger)
+  // height when it is processed next.
+  const newlyExpandedValues = new Set(newlyExpanded.map(group => group.value));
+  for (const group of newlyExpanded) {
+    const groupHeight = groupHeights[group.value] || 0;
+    let parent = findParentGroup(group.value);
+    while (parent) {
+      groupHeights[parent.value] = Math.max(0, (groupHeights[parent.value] || 0) + groupHeight);
+      if (newlyExpandedValues.has(parent.value)) break;
+      if (!groupExpanded[parent.value]) break;
+      parent = findParentGroup(parent.value);
+    }
+  }
+};
+
+const measureAllGroups = () => {
+  const walk = (items) => {
+    for (const item of items) {
+      if (item.children) {
+        measureGroup(item.value);
+        walk(item.children);
+      }
+    }
+  };
+  walk(props.menuItems);
 };
 
 const collapseOverlayAfterNavigation = () => {
@@ -1011,10 +1089,11 @@ const collapseOverlayAfterNavigation = () => {
 };
 
 const getIndicatorTargetForValue = (value) => {
-  const parentGroup = findParentGroup(value);
-  if (parentGroup && (isTopNavigation.value || isClosedCompact.value)) {
-    return { value: parentGroup.value, isChild: false };
+  const ancestorGroups = findAncestorGroups(value);
+  if (ancestorGroups.length && (isTopNavigation.value || isClosedCompact.value)) {
+    return { value: ancestorGroups[ancestorGroups.length - 1].value, isChild: false };
   }
+  const parentGroup = findParentGroup(value);
   return { value, isChild: !!parentGroup };
 };
 
@@ -1024,12 +1103,8 @@ const moveIndicatorForValue = (value) => {
 };
 
 const prepareSelectionTarget = (value) => {
-  const parentGroup = findParentGroup(value);
-  if (parentGroup && !isTopNavigation.value && !isClosedCompact.value && !groupExpanded[parentGroup.value]) {
-    delete manuallyCollapsedGroups[parentGroup.value];
-    groupExpanded[parentGroup.value] = true;
-    nextTick(() => measureGroup(parentGroup.value));
-  }
+  if (isTopNavigation.value || isClosedCompact.value) return;
+  expandAncestorGroups(value);
 };
 
 const syncIndicatorForSelectedItem = (value, { collapsePane = false } = {}) => {
@@ -1046,6 +1121,14 @@ const syncIndicatorForSelectedItem = (value, { collapsePane = false } = {}) => {
     updateTopNavigationLayout();
     nextTick(() => {
       const target = getIndicatorTargetForValue(value);
+      if (!itemRefs[target.value]) {
+        lastSelectedEl = null;
+        lastIsChild = false;
+        indicatorHiddenByScroll = false;
+        indicatorIsChild.value = false;
+        indicatorStyle.value = { opacity: '0', transition: 'none' };
+        return;
+      }
       if (isLeftMinimalMode.value && isCompact.value && paneTransition.value !== 'closing') {
         lastSelectedEl = itemRefs[target.value] || null;
         lastIsChild = target.isChild;
@@ -1080,9 +1163,9 @@ const selectNavigationValue = (value, isChild = null, { collapsePane = true } = 
   });
 };
 
-const onItemClick = (item) => {
+const onItemClick = (item, isChild = false) => {
   if (!item.isEnabled) return;
-  selectNavigationValue(item.value, false);
+  selectNavigationValue(item.value, isChild);
 };
 
 const onChildClick = (group, child) => {
@@ -1237,7 +1320,7 @@ const onMoreGroupChevronClick = (item) => {
 
 const toggleLeftGroup = (item) => {
   const wasExpanded = groupExpanded[item.value];
-  const selectedChild = isChildOfGroup(item);
+  const selectedChild = isDescendantOfGroup(item);
   const track = indicatorTrack.value;
   const source = selectedChild && !wasExpanded ? itemRefs[item.value] : null;
   const sourceRect = source && track ? getTrackRelativeRect(source, track) : null;
@@ -1252,10 +1335,8 @@ const toggleLeftGroup = (item) => {
     delete manuallyCollapsedGroups[item.value];
     Expand(item.source);
   }
-  nextTick(() => measureGroup(item.value));
   if (selectedChild) {
     nextTick(() => {
-      measureGroup(item.value);
       const target = wasExpanded ? itemRefs[item.value] : itemRefs[props.selectedValue];
       if (!target) return;
       prevSelectedEl = lastSelectedEl;
@@ -1919,10 +2000,18 @@ const restoreIndicatorAfterPaneLayout = () => {
   if (isLeftMinimalMode.value && isCompact.value) return;
   const value = props.selectedValue;
   if (!value || !navRef.value) return;
-  const parentGroup = findParentGroup(value);
-  const selectedGroupCollapsed = parentGroup && !groupExpanded[parentGroup.value];
-  const target = parentGroup && (isClosedCompact.value || selectedGroupCollapsed)
-    ? itemRefs[parentGroup.value]
+  const ancestorGroups = findAncestorGroups(value);
+  // Find the nearest ancestor that is still collapsed (the leaf is hidden inside
+  // it), so the indicator rests on a visible group header rather than a hidden
+  // nested item. In ClosedCompact/Top, every child folds into the top-most
+  // ancestor, which is the only visible representation.
+  const collapsedAncestor = ancestorGroups.find(group => !groupExpanded[group.value]) || null;
+  const topMostAncestor = ancestorGroups[ancestorGroups.length - 1] || null;
+  const anchorGroup = isClosedCompact.value || isTopNavigation.value
+    ? topMostAncestor
+    : collapsedAncestor;
+  const target = anchorGroup
+    ? itemRefs[anchorGroup.value]
     : itemRefs[value] || (value === settingsValue.value ? itemRefs[settingsValue.value] : null);
   const indicatorEl = indicatorTrack.value?.querySelector('.win-nav-indicator');
   if (!target || !indicatorEl) return;
@@ -1931,7 +2020,7 @@ const restoreIndicatorAfterPaneLayout = () => {
   // item. Always snap/recalculate after the layout settles so the indicator
   // cannot remain at a stale position or stay hidden after a fold.
   lastSelectedEl = target;
-  lastIsChild = !!parentGroup && !isClosedCompact.value && !selectedGroupCollapsed;
+  lastIsChild = !anchorGroup && !!ancestorGroups.length && !isClosedCompact.value;
   indicatorIsChild.value = lastIsChild;
   skipTransition = true;
   nextIndicatorAnimation(indicatorEl);
@@ -1962,13 +2051,16 @@ const onResize = () => {
   if (!lastSelectedEl || !navRef.value || !navRef.value.contains(lastSelectedEl)) {
     const val = props.selectedValue;
     if (val) {
-      const parentGroup = findParentGroup(val);
-      if (parentGroup && (isTopNavigation.value || isClosedCompact.value)) {
-        lastSelectedEl = itemRefs[parentGroup.value] || null;
+      const ancestorGroups = findAncestorGroups(val);
+      const anchorGroup = isTopNavigation.value || isClosedCompact.value
+        ? (ancestorGroups[ancestorGroups.length - 1] || null)
+        : null;
+      if (anchorGroup) {
+        lastSelectedEl = itemRefs[anchorGroup.value] || null;
         lastIsChild = false;
       } else {
         lastSelectedEl = itemRefs[val] || null;
-        lastIsChild = !!parentGroup && !isClosedCompact.value;
+        lastIsChild = !!ancestorGroups.length && !isClosedCompact.value;
       }
     }
   }
@@ -2014,12 +2106,10 @@ const refreshAfterPositionChange = () => {
     updateTopNavigationLayout();
     const val = props.selectedValue;
     if (val) {
-      const parentGroup = findParentGroup(val);
+      const ancestorGroups = findAncestorGroups(val);
+      const parentGroup = ancestorGroups.length ? ancestorGroups[ancestorGroups.length - 1] : null;
       if (parentGroup) {
-        if (isTopNavigation.value) {
-          lastSelectedEl = itemRefs[parentGroup.value];
-          lastIsChild = false;
-        } else if (isClosedCompact.value) {
+        if (isTopNavigation.value || isClosedCompact.value) {
           lastSelectedEl = itemRefs[parentGroup.value];
           lastIsChild = false;
         } else {
@@ -2052,20 +2142,19 @@ const initIndicator = () => {
     updateTopNavigationLayout();
     const val = props.selectedValue;
     if (val) {
-      const parentGroup = findParentGroup(val);
+      const ancestorGroups = findAncestorGroups(val);
+      const parentGroup = ancestorGroups.length ? ancestorGroups[ancestorGroups.length - 1] : null;
       if (parentGroup) {
         if (!isTopNavigation.value && !isClosedCompact.value) {
-          if (!groupExpanded[parentGroup.value]) {
-            groupExpanded[parentGroup.value] = true;
+          const collapsedAncestors = ancestorGroups.filter(group => !groupExpanded[group.value]);
+          if (collapsedAncestors.length) {
+            expandAncestorGroups(val);
             nextTick(() => {
-              measureGroup(parentGroup.value);
-              nextTick(() => {
-                lastSelectedEl = itemRefs[val];
-                lastIsChild = true;
-                indicatorIsChild.value = true;
-                calcIndicator();
-                settleInitialIndicator();
-              });
+              lastSelectedEl = itemRefs[val];
+              lastIsChild = true;
+              indicatorIsChild.value = true;
+              calcIndicator();
+              settleInitialIndicator();
             });
             return;
           }
@@ -2086,6 +2175,22 @@ const initIndicator = () => {
   });
 };
 
+provide(winNavigationItemContextKey, {
+  selectedValue,
+  groupExpanded,
+  groupHeights,
+  groupChevrons,
+  isPaneGroupChildrenVisible,
+  itemToolTipAttrs,
+  groupChevronClass,
+  isDescendantOfGroup,
+  onItemClick,
+  onGroupHeaderClick,
+  onGroupChevronClick,
+  setItemRef,
+  setChildrenRef
+});
+
 onMounted(() => {
   containerWidth.value = shellRef.value?.clientWidth || shellRef.value?.offsetWidth || window.innerWidth;
   lastResizeShellWidth = containerWidth.value;
@@ -2094,8 +2199,7 @@ onMounted(() => {
   layoutObserver = new MutationObserver(queueLayoutRefresh);
   // Page content is a sibling of the navigation tree. Observing the shell
   // caused every page switch to refresh navigation layout unnecessarily.
-  rebindLayoutMutationObserver();
-  window.addEventListener('resize', onResize);
+  rebindLayoutMutationObserver();  window.addEventListener('resize', onResize);
   document.addEventListener('pointerdown', onDocumentPointerDown, true);
   initIndicator();
 });
@@ -2251,17 +2355,20 @@ watch(isCompact, (compact) => {
   // the pane surface plays the reverse opening animation.
   if (isLeftMinimalMode.value) {
     if (!compact) {
-      const parentGroup = findParentGroup(props.selectedValue);
+      const ancestorGroups = findAncestorGroups(props.selectedValue);
+      const parentGroup = ancestorGroups[ancestorGroups.length - 1] || null;
       if (parentGroup) {
-        if (manuallyCollapsedGroups[parentGroup.value]) {
+        const collapsedAncestors = ancestorGroups.filter(group => !groupExpanded[group.value]);
+        const manuallyCollapsed = ancestorGroups.some(group => manuallyCollapsedGroups[group.value]);
+        if (manuallyCollapsed && !collapsedAncestors.length) {
           nextTick(() => {
             measureAllGroups();
             restoreIndicatorAfterPaneLayout();
           });
         } else {
-          groupExpanded[parentGroup.value] = true;
+          expandAncestorGroups(props.selectedValue);
           nextTick(() => {
-            measureGroup(parentGroup.value);
+            measureAllGroups();
             requestAnimationFrame(() => restoreIndicatorAfterPaneLayout());
           });
         }
@@ -2273,19 +2380,21 @@ watch(isCompact, (compact) => {
   }
 
   if (compact) {
-    const parentGroup = findParentGroup(props.selectedValue);
+    const ancestorGroups = findAncestorGroups(props.selectedValue);
+    const topMostAncestor = ancestorGroups[ancestorGroups.length - 1] || null;
     // ClosedCompact collapses child presenters to height zero, but it must not
     // discard their expansion state. Native NavigationView restores every
     // group that was open when the pane is opened again, rather than reopening
     // only the selected item's parent.
-    if (parentGroup && manuallyCollapsedGroups[parentGroup.value]) {
+    const anyManuallyCollapsed = ancestorGroups.some(group => manuallyCollapsedGroups[group.value]);
+    if (topMostAncestor && anyManuallyCollapsed) {
       // The selected child was already moved to its parent by the manual
       // group collapse. The pane fold only changes visibility; do not replay
       // the child-to-parent indicator collapse animation.
       nextTick(() => restoreIndicatorAfterPaneLayout());
-    } else if (parentGroup) {
+    } else if (topMostAncestor) {
       nextTick(() => {
-        const header = itemRefs[parentGroup.value];
+        const header = itemRefs[topMostAncestor.value];
         if (header) {
           prevSelectedEl = lastSelectedEl;
           lastSelectedEl = header;
@@ -2306,26 +2415,27 @@ watch(isCompact, (compact) => {
       });
     }
   } else {
-    const parentGroup = findParentGroup(props.selectedValue);
-    if (parentGroup && manuallyCollapsedGroups[parentGroup.value]) {
-      // Keep a manually collapsed selected group closed when the pane opens.
-      // Recalculate the parent indicator after the pane layout settles.
+    const ancestorGroups = findAncestorGroups(props.selectedValue);
+    const parentGroup = ancestorGroups[ancestorGroups.length - 1] || null;
+    const collapsedAncestors = parentGroup ? ancestorGroups.filter(group => !groupExpanded[group.value]) : [];
+    if (parentGroup && !collapsedAncestors.length) {
+      // All ancestors expanded, so the selected leaf is already visible.
       nextTick(() => {
         measureAllGroups();
         restoreIndicatorAfterPaneLayout();
       });
     } else if (parentGroup) {
       const track = indicatorTrack.value;
-      const header = itemRefs[parentGroup.value];
+      const topMostAncestor = ancestorGroups[ancestorGroups.length - 1];
+      const header = itemRefs[topMostAncestor.value];
       const headerRect = header && track ? getTrackRelativeRect(header, track) : null;
       const sourceY = headerRect
         ? headerRect.top + (headerRect.bottom - headerRect.top) / 2 - 8
         : null;
       const sourceRect = headerRect;
-      groupExpanded[parentGroup.value] = true;
+      expandAncestorGroups(props.selectedValue);
       nextTick(() => {
         measureAllGroups();
-        measureGroup(parentGroup.value);
         const sel = itemRefs[props.selectedValue];
         if (!sel) return;
         prevSelectedEl = lastSelectedEl;

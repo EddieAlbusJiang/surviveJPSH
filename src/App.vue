@@ -33,7 +33,19 @@
           :IsBackEnabled="canGoBack"
           :OpenPaneLength="240"
           @ItemInvoked="handleNavClick">
-          <router-view />
+          <router-view v-slot="{ Component }">
+            <Transition
+              appear
+              :enter-active-class="pageTransitionEnter"
+              :leave-active-class="pageTransitionLeave">
+              <div
+                v-if="Component"
+                :key="route.path"
+                class="page-view">
+                <component :is="Component" />
+              </div>
+            </Transition>
+          </router-view>
         </WinNavigationView>
       </div>
     </div>
@@ -43,6 +55,12 @@
 <script setup lang="ts">
 import { ref, computed, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import {
+  NavigationTrigger_NavigatingTo,
+  NavigationTrigger_NavigatingAway,
+  createEntranceNavigationTransitionInfo,
+  getNavigationTransitionInfoClassName
+} from './utils/navigationTransitionInfo'
 import WinThemeWrapper from './components/WinThemeWrapper.vue'
 import WinTitleBar from './components/WinTitleBar.vue'
 import WinNavigationView from './components/WinNavigationView.vue'
@@ -53,6 +71,10 @@ import { IconGlyphs } from './utils/iconGlyphs'
 
 const route = useRoute()
 const router = useRouter()
+
+const navigationTransitionInfo = createEntranceNavigationTransitionInfo()
+const pageTransitionEnter = ref(getNavigationTransitionInfoClassName(navigationTransitionInfo, NavigationTrigger_NavigatingTo))
+const pageTransitionLeave = ref(getNavigationTransitionInfoClassName(navigationTransitionInfo, NavigationTrigger_NavigatingAway))
 
 const i18n = createAppI18n(localStorage.getItem('locale') || navigator.language)
 const t = i18n.t
@@ -174,5 +196,12 @@ const onSearchQuerySubmitted = (args: { QueryText: string; ChosenSuggestion: any
 .app-titlebar-search {
   width: 100%;
   max-width: 350px;
+}
+
+.page-view {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 </style>

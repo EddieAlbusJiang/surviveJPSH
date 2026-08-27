@@ -27,6 +27,7 @@ export default {
   'about.contributing.repo': 'surviveJPSH仓库地址：',
   'doc.notFound': '文档未找到',
   'doc.loadError': '文档加载出错',
+  'doc.contents': '文档目录',
   'settings.title': '设置',
   'settings.appearance': '外观',
   'settings.theme': '主题',

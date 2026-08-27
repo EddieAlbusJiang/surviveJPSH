@@ -27,6 +27,7 @@ export default {
   'about.contributing.repo': 'surviveJPSH Repository: ',
   'doc.notFound': 'Document not found',
   'doc.loadError': 'Failed to load document',
+  'doc.contents': 'On this page',
   'settings.title': 'Settings',
   'settings.appearance': 'Appearance',
   'settings.theme': 'Theme',
