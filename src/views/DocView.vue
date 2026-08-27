@@ -53,6 +53,7 @@ const content = ref('')
 const contentElement = ref<HTMLElement>()
 const scrollViewer = ref<ScrollViewerExpose>()
 const headings = ref<DocumentHeading[]>([])
+const tocHeadings = computed(() => headings.value.filter(h => h.level > 1))
 const activeHeadingId = ref('')
 const isTocOpen = ref(typeof window === 'undefined' || window.innerWidth >= 900)
 let scrollFrame = 0
@@ -92,12 +93,11 @@ function buildHeadingIndex() {
   })
 
   headings.value = indexedHeadings
-  activeHeadingId.value = indexedHeadings[0]?.id || ''
+  activeHeadingId.value = indexedHeadings.find(h => h.level > 1)?.id || indexedHeadings[0]?.id || ''
 }
 
 const tocMenuItems = computed<TocMenuItem[]>(() => {
-  const items = headings.value
-    .filter(heading => heading.level > 1)
+  const items = tocHeadings.value
     .map(heading => ({ ...heading }))
   const roots: TocMenuItem[] = []
   const stack: { level: number; item: TocMenuItem }[] = []
@@ -122,18 +122,18 @@ const tocMenuItems = computed<TocMenuItem[]>(() => {
 
 function updateActiveHeading() {
   scrollFrame = 0
-  if (!headings.value.length) return
+  if (!tocHeadings.value.length) return
 
   const viewport = getScrollViewport()
   if (viewport && viewport.scrollTop + viewport.clientHeight >= viewport.scrollHeight - 2) {
-    activeHeadingId.value = headings.value[headings.value.length - 1].id
+    activeHeadingId.value = tocHeadings.value[tocHeadings.value.length - 1].id
     return
   }
   const viewportTop = viewport?.getBoundingClientRect().top ?? 0
   const activationLine = viewportTop + 72
-  let currentId = headings.value[0].id
+  let currentId = tocHeadings.value[0].id
 
-  for (const heading of headings.value) {
+  for (const heading of tocHeadings.value) {
     const element = document.getElementById(heading.id)
     if (!element || element.getBoundingClientRect().top > activationLine) break
     currentId = heading.id

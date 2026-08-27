@@ -1121,6 +1121,14 @@ const syncIndicatorForSelectedItem = (value, { collapsePane = false } = {}) => {
     updateTopNavigationLayout();
     nextTick(() => {
       const target = getIndicatorTargetForValue(value);
+      if (!itemRefs[target.value]) {
+        lastSelectedEl = null;
+        lastIsChild = false;
+        indicatorHiddenByScroll = false;
+        indicatorIsChild.value = false;
+        indicatorStyle.value = { opacity: '0', transition: 'none' };
+        return;
+      }
       if (isLeftMinimalMode.value && isCompact.value && paneTransition.value !== 'closing') {
         lastSelectedEl = itemRefs[target.value] || null;
         lastIsChild = target.isChild;
