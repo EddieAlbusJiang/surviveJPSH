@@ -40,7 +40,7 @@
               :leave-active-class="pageTransitionLeave">
               <div
                 v-if="Component"
-                :key="route.fullPath"
+                :key="route.path"
                 class="page-view">
                 <component :is="Component" />
               </div>
