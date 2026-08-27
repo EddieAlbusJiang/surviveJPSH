@@ -1,73 +1,45 @@
 <template>
   <div class="doc-view">
-    <div class="doc-toolbar">
-      <WinButton
-        class="doc-toc-toggle"
-        Style="{StaticResource SubtleButtonStyle}"
-        :aria-label="tocToggleLabel"
-        :aria-expanded="isTocOpen"
-        aria-controls="doc-table-of-contents"
-        v-bind="{ 'tooltipservice.tooltip': tocToggleLabel }"
-        @Click="toggleToc">
-        <span class="icon" aria-hidden="true">{{ IconGlyphs.Navigation }}</span>
-      </WinButton>
-      <WinBreadcrumbBar :ItemsSource="breadcrumbs" />
-    </div>
-
-    <div class="doc-body" :class="{ 'is-toc-open': isTocOpen, 'is-compact': isCompact }">
-      <button
-        v-if="isCompact && isTocOpen"
-        class="doc-toc-scrim"
-        type="button"
-        :aria-label="t('doc.hideContents')"
-        @click="closeToc"></button>
-
-      <aside
-        id="doc-table-of-contents"
-        class="doc-toc"
-        :aria-hidden="!isTocOpen"
-        :inert="!isTocOpen ? '' : undefined">
-        <div class="doc-toc-surface">
-          <div class="doc-toc-header">{{ t('doc.contents') }}</div>
-          <nav class="doc-toc-list" :aria-label="t('doc.contents')">
-            <button
-              v-for="heading in headings"
-              :key="heading.id"
-              type="button"
-              class="doc-toc-item"
-              :class="{ 'is-active': activeHeadingId === heading.id }"
-              :style="{ '--heading-depth': String(heading.level - minimumHeadingLevel) }"
-              :aria-current="activeHeadingId === heading.id ? 'location' : undefined"
-              :title="heading.text"
-              @click="navigateToHeading(heading.id)">
-              <span>{{ heading.text }}</span>
-            </button>
-          </nav>
-        </div>
-      </aside>
+    <WinNavigationView
+      v-model:IsPaneOpen="isTocOpen"
+      :MenuItems="tocMenuItems"
+      :SelectedItem="activeHeadingId"
+      PaneDisplayMode="Auto"
+      :CompactModeThresholdWidth="900"
+      :ExpandedModeThresholdWidth="900"
+      :OpenPaneLength="240"
+      :PaneTitle="t('doc.contents')"
+      IsSettingsVisible="false"
+      IsBackButtonVisible="Collapsed"
+      @ItemInvoked="onTocItemInvoked">
 
       <WinScrollViewer ref="scrollViewer" class="doc-scroll" @ViewChanged="onDocumentScroll">
         <div ref="contentElement" class="doc-content markdown-body" v-html="renderedMarkdown"></div>
       </WinScrollViewer>
-    </div>
+    </WinNavigationView>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import WinNavigationView from '../components/WinNavigationView.vue'
 import WinScrollViewer from '../components/WinScrollViewer.vue'
 import WinBreadcrumbBar from '../components/WinBreadcrumbBar.vue'
-import WinButton from '../components/WinButton.vue'
 import { parseMarkdown } from '../utils/markdown'
 import { slugify } from '../utils/searchIndex'
-import { IconGlyphs } from '../utils/iconGlyphs'
 import { createAppI18n } from '../i18n'
 
 interface DocumentHeading {
   id: string
   text: string
   level: number
+}
+
+interface TocMenuItem {
+  value: string
+  label: string
+  children?: TocMenuItem[]
 }
 
 interface ScrollViewerExpose {
@@ -82,9 +54,7 @@ const contentElement = ref<HTMLElement>()
 const scrollViewer = ref<ScrollViewerExpose>()
 const headings = ref<DocumentHeading[]>([])
 const activeHeadingId = ref('')
-const isTocOpen = ref(true)
-const isCompact = ref(false)
-let compactMediaQuery: MediaQueryList | undefined
+const isTocOpen = ref(typeof window === 'undefined' || window.innerWidth >= 900)
 let scrollFrame = 0
 
 const mdModules = import.meta.glob('/src/docs/*.md', {
@@ -93,12 +63,6 @@ const mdModules = import.meta.glob('/src/docs/*.md', {
 })
 
 const renderedMarkdown = computed(() => parseMarkdown(content.value))
-const minimumHeadingLevel = computed(() => (
-  headings.value.length ? Math.min(...headings.value.map(heading => heading.level)) : 1
-))
-const tocToggleLabel = computed(() => (
-  isTocOpen.value ? t('doc.hideContents') : t('doc.showContents')
-))
 
 function getScrollViewport(): HTMLDivElement | undefined {
   const exposed = scrollViewer.value?.scrollViewerRef
@@ -130,6 +94,31 @@ function buildHeadingIndex() {
   headings.value = indexedHeadings
   activeHeadingId.value = indexedHeadings[0]?.id || ''
 }
+
+const tocMenuItems = computed<TocMenuItem[]>(() => {
+  const items = headings.value
+    .filter(heading => heading.level > 1)
+    .map(heading => ({ ...heading }))
+  const roots: TocMenuItem[] = []
+  const stack: { level: number; item: TocMenuItem }[] = []
+
+  for (const heading of items) {
+    const node: TocMenuItem = { value: heading.id, label: heading.text, children: [] }
+    while (stack.length && stack[stack.length - 1].level >= heading.level) {
+      stack.pop()
+    }
+    if (stack.length) {
+      const parent = stack[stack.length - 1].item
+      parent.children = parent.children || []
+      parent.children.push(node)
+    } else {
+      roots.push(node)
+    }
+    stack.push({ level: heading.level, item: node })
+  }
+
+  return roots
+})
 
 function updateActiveHeading() {
   scrollFrame = 0
@@ -170,29 +159,13 @@ function scrollToHash(behavior: ScrollBehavior = 'smooth') {
   if (id) scrollToHeading(id, behavior)
 }
 
-function navigateToHeading(id: string) {
+function onTocItemInvoked(args: { InvokedItemContainer?: { value?: string } }) {
+  const id = args?.InvokedItemContainer?.value
+  if (!id) return
   scrollToHeading(id)
   if (route.hash !== `#${id}`) {
     void router.replace({ hash: `#${id}` })
   }
-  if (isCompact.value) closeToc()
-}
-
-function toggleToc() {
-  isTocOpen.value = !isTocOpen.value
-}
-
-function closeToc() {
-  isTocOpen.value = false
-}
-
-function handleCompactChange(event: MediaQueryListEvent | MediaQueryList) {
-  isCompact.value = event.matches
-  isTocOpen.value = !event.matches
-}
-
-function handleKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape' && isCompact.value && isTocOpen.value) closeToc()
 }
 
 const docTitleMap: Record<string, string> = {
@@ -237,16 +210,7 @@ watch(() => route.hash, async hash => {
   scrollToHash()
 })
 
-onMounted(() => {
-  compactMediaQuery = window.matchMedia('(max-width: 900px)')
-  handleCompactChange(compactMediaQuery)
-  compactMediaQuery.addEventListener('change', handleCompactChange)
-  document.addEventListener('keydown', handleKeydown)
-})
-
 onBeforeUnmount(() => {
-  compactMediaQuery?.removeEventListener('change', handleCompactChange)
-  document.removeEventListener('keydown', handleKeydown)
   if (scrollFrame) cancelAnimationFrame(scrollFrame)
 })
 </script>
@@ -254,139 +218,30 @@ onBeforeUnmount(() => {
 <style scoped>
 .doc-view {
   height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.doc-toolbar {
-  min-height: 44px;
-  padding: 6px 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border-bottom: 1px solid var(--ctrl-border);
-  flex: 0 0 auto;
-}
-
-.doc-toolbar :deep(.win-breadcrumb-bar) {
-  flex: 1 1 auto;
-}
-
-.doc-toc-toggle {
-  width: 32px;
-  min-width: 32px;
-  height: 32px;
-  min-height: 32px;
-  padding: 0;
-  flex: 0 0 32px;
-}
-
-.doc-toc-toggle .icon {
-  font-size: 18px;
-}
-
-.doc-body {
-  position: relative;
-  min-width: 0;
-  min-height: 0;
-  flex: 1 1 auto;
-  display: flex;
-  overflow: hidden;
-}
-
-.doc-toc {
-  box-sizing: border-box;
-  width: 0;
-  min-width: 0;
+.doc-view :deep(.win-nav-shell) {
+  width: 100%;
   height: 100%;
-  flex: 0 0 auto;
-  overflow: hidden;
-  border-right: 0 solid var(--ctrl-border);
-  transition: width 200ms cubic-bezier(0, 0.35, 0.15, 1), border-width 200ms cubic-bezier(0, 0.35, 0.15, 1);
 }
 
-.doc-body.is-toc-open .doc-toc {
-  width: 240px;
-  border-right-width: 1px;
+.doc-view :deep(.win-nav-content) {
+  min-width: 0;
 }
 
-.doc-toc-surface {
-  box-sizing: border-box;
-  width: 240px;
-  height: 100%;
-  padding: 8px 4px;
+.doc-view :deep(.win-nav-content-inner) {
   display: flex;
   flex-direction: column;
-  background: var(--app-bg);
-}
-
-.doc-toc-header {
-  min-height: 40px;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.doc-toc-list {
-  min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.doc-toc-item {
-  position: relative;
-  box-sizing: border-box;
-  width: calc(100% - 8px);
-  min-height: 36px;
-  margin: 2px 4px;
-  padding: 7px 10px 7px calc(10px + var(--heading-depth) * 14px);
-  display: flex;
-  align-items: center;
-  border: 0;
-  border-radius: 4px;
-  background: transparent;
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: 14px;
-  line-height: 20px;
-  text-align: left;
-  cursor: pointer;
-}
-
-.doc-toc-item:hover {
-  background: var(--subtle-secondary);
-  color: var(--text-primary);
-}
-
-.doc-toc-item:active {
-  background: var(--subtle-pressed);
-}
-
-.doc-toc-item.is-active {
-  background: var(--subtle-secondary);
-  color: var(--text-primary);
-}
-
-.doc-toc-item.is-active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 3px;
-  border-radius: 2px;
-  background: var(--accent-base);
-}
-
-.doc-toc-item span {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-height: 0;
+}
+
+.doc-view :deep(.win-nav-page-header) {
+  padding: 8px 16px 0;
 }
 
 .doc-scroll {
@@ -502,54 +357,9 @@ onBeforeUnmount(() => {
   padding: 0;
 }
 
-.doc-toc-scrim {
-  display: none;
-}
-
 @media (max-width: 900px) {
-  .doc-toc {
-    position: absolute;
-    inset: 0 auto 0 0;
-    z-index: 3;
-    width: 240px;
-    border-right: 1px solid var(--ctrl-border);
-    border-radius: 0 8px 8px 0;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
-    transform: translateX(-100%);
-    transition: transform 200ms cubic-bezier(0.1, 0.9, 0.2, 1);
-  }
-
-  .doc-body.is-toc-open .doc-toc {
-    width: 240px;
-    transform: translateX(0);
-  }
-
-  .doc-toc-surface {
-    background: var(--AcrylicInAppFillColorDefaultBrush, var(--app-bg));
-    -webkit-backdrop-filter: var(--flyout-backdrop);
-    backdrop-filter: var(--flyout-backdrop);
-  }
-
-  .doc-toc-scrim {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    display: block;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    border: 0;
-    background: rgba(0, 0, 0, 0.18);
-  }
-
   .doc-content {
     padding: 1rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .doc-toc {
-    transition-duration: 0ms;
   }
 }
 </style>

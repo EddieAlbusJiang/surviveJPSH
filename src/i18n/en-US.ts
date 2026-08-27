@@ -28,8 +28,6 @@ export default {
   'doc.notFound': 'Document not found',
   'doc.loadError': 'Failed to load document',
   'doc.contents': 'On this page',
-  'doc.showContents': 'Show table of contents',
-  'doc.hideContents': 'Hide table of contents',
   'settings.title': 'Settings',
   'settings.appearance': 'Appearance',
   'settings.theme': 'Theme',
