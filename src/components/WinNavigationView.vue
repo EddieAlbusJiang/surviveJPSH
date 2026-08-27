@@ -299,7 +299,7 @@ const normalizeItem = (item, fallbackKey = 'item') => {
     automationName: item?.['AutomationProperties.Name'] ?? item?.AutomationProperties?.Name ?? '',
     tooltip: item?.ToolTip ?? item?.Tooltip ?? item?.tooltip ?? '',
     type,
-    children: Array.isArray(children)
+    children: Array.isArray(children) && children.length
       ? children.map((child, index) => normalizeItem(child, `${fallbackKey}-${index}`))
       : null,
     isEnabled: (item?.IsEnabled ?? item?.isEnabled ?? !(item?.Disabled ?? item?.disabled ?? false)) !== false,
@@ -981,7 +981,10 @@ const Expand = (item) => {
   emit('Expanding', { ExpandingItemContainer: normalizedItem.source, ExpandingItem: normalizedItem.source });
   delete manuallyCollapsedGroups[value];
   groupExpanded[value] = true;
-  nextTick(() => measureGroup(value));
+  // Measure the group's own inner content (stable regardless of the container's
+  // animation state), then grow every expanded ancestor by the same delta.
+  measureGroup(value);
+  propagateHeightDelta(value, groupHeights[value] || 0);
 };
 
 const Collapse = (item) => {
@@ -990,6 +993,7 @@ const Collapse = (item) => {
   if (!normalizedItem?.children || !groupExpanded[value]) return;
   manuallyCollapsedGroups[value] = true;
   groupExpanded[value] = false;
+  propagateHeightDelta(value, -(groupHeights[value] || 0));
   emit('Collapsed', { CollapsedItemContainer: normalizedItem.source, CollapsedItem: normalizedItem.source });
 };
 
@@ -1017,6 +1021,49 @@ const measureGroup = (value) => {
   const el = childrenRefs[value];
   if (el) {
     groupHeights[value] = el.scrollHeight;
+  }
+};
+
+// Ancestor container heights cannot be re-read from the DOM right after a
+// nested group toggles: Vue flushes the child's height change to the layout in
+// a later frame, so a same-tick read sees the stale (transition-start) height,
+// which inverts the animation. Instead of measuring, propagate the child's
+// height delta up the ancestor chain. A collapsed ancestor contributes zero to
+// its own parent, so the climb stops at the first collapsed group.
+const propagateHeightDelta = (value, delta) => {
+  if (!delta) return;
+  let parent = findParentGroup(value);
+  while (parent) {
+    groupHeights[parent.value] = Math.max(0, (groupHeights[parent.value] || 0) + delta);
+    if (!groupExpanded[parent.value]) return;
+    parent = findParentGroup(parent.value);
+  }
+};
+
+// Expand every collapsed ancestor of a value (deepest first) and keep all
+// ancestor heights in sync without relying on mid-transition DOM reads.
+const expandAncestorGroups = (value) => {
+  const ancestors = findAncestorGroups(value);
+  const newlyExpanded = ancestors.filter(group => !groupExpanded[group.value]);
+  if (!newlyExpanded.length) return;
+  for (const group of newlyExpanded) {
+    delete manuallyCollapsedGroups[group.value];
+    groupExpanded[group.value] = true;
+  }
+  // Deepest first: each newly expanded group contributes its own full height to
+  // the ancestors above it. The climb stops at a sibling that is also being
+  // expanded in this pass, because that sibling propagates its own (now larger)
+  // height when it is processed next.
+  const newlyExpandedValues = new Set(newlyExpanded.map(group => group.value));
+  for (const group of newlyExpanded) {
+    const groupHeight = groupHeights[group.value] || 0;
+    let parent = findParentGroup(group.value);
+    while (parent) {
+      groupHeights[parent.value] = Math.max(0, (groupHeights[parent.value] || 0) + groupHeight);
+      if (newlyExpandedValues.has(parent.value)) break;
+      if (!groupExpanded[parent.value]) break;
+      parent = findParentGroup(parent.value);
+    }
   }
 };
 
@@ -1057,20 +1104,7 @@ const moveIndicatorForValue = (value) => {
 
 const prepareSelectionTarget = (value) => {
   if (isTopNavigation.value || isClosedCompact.value) return;
-  const ancestors = findAncestorGroups(value);
-  let expandedAny = false;
-  for (const group of ancestors) {
-    if (!groupExpanded[group.value]) {
-      delete manuallyCollapsedGroups[group.value];
-      groupExpanded[group.value] = true;
-      expandedAny = true;
-    }
-  }
-  if (expandedAny) {
-    nextTick(() => {
-      for (const group of ancestors) measureGroup(group.value);
-    });
-  }
+  expandAncestorGroups(value);
 };
 
 const syncIndicatorForSelectedItem = (value, { collapsePane = false } = {}) => {
@@ -1293,10 +1327,8 @@ const toggleLeftGroup = (item) => {
     delete manuallyCollapsedGroups[item.value];
     Expand(item.source);
   }
-  nextTick(() => measureGroup(item.value));
   if (selectedChild) {
     nextTick(() => {
-      measureGroup(item.value);
       const target = wasExpanded ? itemRefs[item.value] : itemRefs[props.selectedValue];
       if (!target) return;
       prevSelectedEl = lastSelectedEl;
@@ -2108,19 +2140,13 @@ const initIndicator = () => {
         if (!isTopNavigation.value && !isClosedCompact.value) {
           const collapsedAncestors = ancestorGroups.filter(group => !groupExpanded[group.value]);
           if (collapsedAncestors.length) {
-            for (const group of collapsedAncestors) {
-              delete manuallyCollapsedGroups[group.value];
-              groupExpanded[group.value] = true;
-            }
+            expandAncestorGroups(val);
             nextTick(() => {
-              for (const group of ancestorGroups) measureGroup(group.value);
-              nextTick(() => {
-                lastSelectedEl = itemRefs[val];
-                lastIsChild = true;
-                indicatorIsChild.value = true;
-                calcIndicator();
-                settleInitialIndicator();
-              });
+              lastSelectedEl = itemRefs[val];
+              lastIsChild = true;
+              indicatorIsChild.value = true;
+              calcIndicator();
+              settleInitialIndicator();
             });
             return;
           }
@@ -2332,10 +2358,7 @@ watch(isCompact, (compact) => {
             restoreIndicatorAfterPaneLayout();
           });
         } else {
-          for (const group of ancestorGroups) {
-            delete manuallyCollapsedGroups[group.value];
-            groupExpanded[group.value] = true;
-          }
+          expandAncestorGroups(props.selectedValue);
           nextTick(() => {
             measureAllGroups();
             requestAnimationFrame(() => restoreIndicatorAfterPaneLayout());
@@ -2402,10 +2425,7 @@ watch(isCompact, (compact) => {
         ? headerRect.top + (headerRect.bottom - headerRect.top) / 2 - 8
         : null;
       const sourceRect = headerRect;
-      for (const group of ancestorGroups) {
-        delete manuallyCollapsedGroups[group.value];
-        groupExpanded[group.value] = true;
-      }
+      expandAncestorGroups(props.selectedValue);
       nextTick(() => {
         measureAllGroups();
         const sel = itemRefs[props.selectedValue];

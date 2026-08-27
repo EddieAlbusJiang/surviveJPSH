@@ -9,7 +9,7 @@
       :ExpandedModeThresholdWidth="900"
       :OpenPaneLength="240"
       :PaneTitle="t('doc.contents')"
-      IsSettingsVisible="false"
+      :IsSettingsVisible="false"
       IsBackButtonVisible="Collapsed"
       @ItemInvoked="onTocItemInvoked">
 
@@ -103,7 +103,7 @@ const tocMenuItems = computed<TocMenuItem[]>(() => {
   const stack: { level: number; item: TocMenuItem }[] = []
 
   for (const heading of items) {
-    const node: TocMenuItem = { value: heading.id, label: heading.text, children: [] }
+    const node: TocMenuItem = { value: heading.id, label: heading.text }
     while (stack.length && stack[stack.length - 1].level >= heading.level) {
       stack.pop()
     }
