@@ -1,5 +1,28 @@
 <template>
   <div class="doc-view">
+    <div class="doc-topbar">
+      <button
+        type="button"
+        class="doc-topbar-toggle"
+        data-nav-pane-toggle
+        :aria-label="tocToggleLabel"
+        v-bind="{ 'tooltipservice.tooltip': tocToggleLabel }"
+        @mousedown="onTocToggleDown"
+        @mouseup="onTocToggleUp"
+        @mouseleave="onTocToggleLeave"
+        @click="toggleTocPane">
+        <span
+          class="icon animated-icon animated-icon-hamburger"
+          :class="tocHamburgerClass"
+          aria-hidden="true"
+          @animationend="onTocToggleAnimEnd">{{ IconGlyphs.Navigation }}</span>
+      </button>
+      <WinBreadcrumbBar
+        class="doc-topbar-breadcrumb"
+        :ItemsSource="headingPath.map(p => p.text)"
+        IsEnabled="false" />
+    </div>
+
     <WinNavigationView
       v-model:IsPaneOpen="isTocOpen"
       :MenuItems="tocMenuItems"
@@ -10,6 +33,7 @@
       :OpenPaneLength="240"
       :PaneTitle="t('doc.contents')"
       :IsSettingsVisible="false"
+      :IsPaneToggleButtonVisible="false"
       IsBackButtonVisible="Collapsed"
       @ItemInvoked="onTocItemInvoked">
 
@@ -28,6 +52,7 @@ import WinScrollViewer from '../components/WinScrollViewer.vue'
 import WinBreadcrumbBar from '../components/WinBreadcrumbBar.vue'
 import { parseMarkdown } from '../utils/markdown'
 import { slugify } from '../utils/searchIndex'
+import { IconGlyphs } from '../utils/iconGlyphs'
 import { createAppI18n } from '../i18n'
 
 interface DocumentHeading {
@@ -57,6 +82,53 @@ const tocHeadings = computed(() => headings.value.filter(h => h.level > 1))
 const activeHeadingId = ref('')
 const isTocOpen = ref(typeof window === 'undefined' || window.innerWidth >= 900)
 let scrollFrame = 0
+
+const headingPath = computed(() => {
+  if (!activeHeadingId.value || !headings.value.length) return []
+  const activeIdx = headings.value.findIndex(h => h.id === activeHeadingId.value)
+  if (activeIdx < 0) return []
+  const stack: (DocumentHeading)[] = []
+  for (let i = 0; i <= activeIdx; i++) {
+    const h = headings.value[i]
+    while (stack.length && stack[stack.length - 1].level >= h.level) stack.pop()
+    stack.push(h)
+  }
+  return stack.map(({ text, id }) => ({ text, id }))
+})
+
+const tocHamburgerClass = ref('')
+let tocHamburgerPressed = false
+let tocHamburgerPressDone = false
+
+const tocToggleLabel = computed(() => t(isTocOpen.value ? 'text.close-navigation' : 'text.open-navigation'))
+
+const onTocToggleDown = () => {
+  tocHamburgerPressed = true
+  tocHamburgerPressDone = false
+  tocHamburgerClass.value = 'pressing'
+}
+
+const onTocToggleUp = () => {
+  if (!tocHamburgerPressed) return
+  tocHamburgerPressed = false
+  if (tocHamburgerPressDone) tocHamburgerClass.value = 'releasing'
+}
+
+const onTocToggleLeave = onTocToggleUp
+
+const onTocToggleAnimEnd = (event: AnimationEvent) => {
+  if (tocHamburgerClass.value === 'pressing' && event.animationName === 'hamburger-press') {
+    tocHamburgerPressDone = true
+    if (!tocHamburgerPressed) tocHamburgerClass.value = 'releasing'
+  } else if (tocHamburgerClass.value === 'releasing' && event.animationName === 'hamburger-release') {
+    tocHamburgerClass.value = ''
+    tocHamburgerPressDone = false
+  }
+}
+
+const toggleTocPane = () => {
+  isTocOpen.value = !isTocOpen.value
+}
 
 const mdModules = import.meta.glob('/src/docs/*.md', {
   query: '?raw',
@@ -168,19 +240,6 @@ function onTocItemInvoked(args: { InvokedItemContainer?: { value?: string } }) {
   }
 }
 
-const docTitleMap: Record<string, string> = {
-  study: t('nav.study'),
-  life: t('nav.life')
-}
-
-const breadcrumbs = computed(() => {
-  const id = route.params.id as string
-  return [
-    { text: t('nav.home'), path: '/' },
-    { text: docTitleMap[id] || id }
-  ]
-})
-
 watch(() => route.params.id, async (id) => {
   if (!id) return
   const loader = mdModules[`/src/docs/${id}.md`]
@@ -224,9 +283,58 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
+.doc-topbar {
+  flex: 0 0 auto;
+  height: 48px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 4px;
+  background: var(--app-bg);
+  border-bottom: 1px solid var(--ctrl-border);
+}
+
+.doc-topbar-toggle {
+  box-sizing: border-box;
+  width: 40px;
+  height: 36px;
+  margin: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ControlCornerRadius, 4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-primary);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--SymbolThemeFontFamily, 'WinUIOnWebIcons');
+  font-size: 16px;
+  transition: background var(--fast-duration) var(--fast-out-slow-in), color var(--fast-duration) var(--fast-out-slow-in);
+}
+
+.doc-topbar-toggle:hover {
+  background: var(--subtle-secondary);
+}
+
+.doc-topbar-toggle:active {
+  background: var(--subtle-tertiary);
+}
+
+.doc-topbar-breadcrumb {
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
 .doc-view :deep(.win-nav-shell) {
   width: 100%;
-  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .doc-view :deep(.win-nav-content) {
