@@ -29,7 +29,7 @@
     <WinExpander :Header="t('about.contributing')">
       <div class="about-section">
         <p>{{ t('about.contributing.desc') }}</p>
-        <p>{{ t('about.contributing.repo') }}<a href="https://github.com/user/surviveJPSH">https://github.com/user/surviveJPSH</a></p>
+        <p>{{ t('about.contributing.repo') }}<a href="https://github.com/EddieAlbusJiang/surviveJPSH">https://github.com/EddieAlbusJiang/surviveJPSH</a></p>
       </div>
     </WinExpander>
   </div>
