@@ -1,6 +1,6 @@
 <template>
   <div class="about-view">
-    <h4>Preview v1.0.1</h4>
+    <h4>Preview v0.2.1</h4>
     <h1 class="about-title">{{ t('about.title') }}</h1>
 
     <WinExpander :Header="t('about.project')" :IsOpen="true">
