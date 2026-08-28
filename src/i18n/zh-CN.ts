@@ -13,7 +13,7 @@ export default {
   'search.noResults': '没有找到结果',
   'about.title': '关于',
   'about.project': '项目介绍',
-  'about.project.desc': '本项目旨在为建平中学新生提供一份实用的校园生存指南，涵盖学习和生活两个方面。',
+  'about.project.desc': '本项目旨在为建平中学学生提供一份实用的校园生存经验指南，涵盖学习、生活、思维等多个方面。',
   'about.project.tech': '技术栈：Vue 3 + TypeScript + Vite + WinUI on Web',
   'about.project.ui': 'UI：WinUI 风格组件库（90+ 组件）',
   'about.project.deploy': '部署：Cloudflare Workers + GitHub Pages',

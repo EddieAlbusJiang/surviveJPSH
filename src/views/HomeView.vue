@@ -1,26 +1,29 @@
 <template>
-  <div class="home-view">
-    <div class="home-header">
-      <h1 class="home-title">surviveJPSH</h1>
-      <p class="home-subtitle">{{ t('home.subtitle') }}</p>
-    </div>
-    <div class="home-cards">
-      <div class="doc-card" @click="router.push('/doc/study')">
-        <div class="card-icon">{{IconGlyphs.Pen}}</div>
-        <h2 class="card-title">{{ t('nav.study') }}</h2>
-        <p class="card-desc">{{ t('home.study.desc') }}</p>
+  <WinScrollViewer class="home-scroll">
+    <div class="home-view">
+      <div class="home-header">
+        <h1 class="home-title">surviveJPSH</h1>
+        <p class="home-subtitle">{{ t('home.subtitle') }}</p>
       </div>
-      <div class="doc-card" @click="router.push('/doc/life')">
-        <div class="card-icon">{{IconGlyphs.Life}}</div>
-        <h2 class="card-title">{{ t('nav.life') }}</h2>
-        <p class="card-desc">{{ t('home.life.desc') }}</p>
+      <div class="home-cards">
+        <div class="doc-card" @click="router.push('/doc/study')">
+          <div class="card-icon">{{IconGlyphs.Pen}}</div>
+          <h2 class="card-title">{{ t('nav.study') }}</h2>
+          <p class="card-desc">{{ t('home.study.desc') }}</p>
+        </div>
+        <div class="doc-card" @click="router.push('/doc/life')">
+          <div class="card-icon">{{IconGlyphs.Life}}</div>
+          <h2 class="card-title">{{ t('nav.life') }}</h2>
+          <p class="card-desc">{{ t('home.life.desc') }}</p>
+        </div>
       </div>
     </div>
-  </div>
+  </WinScrollViewer>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import WinScrollViewer from '../components/WinScrollViewer.vue'
 import { createAppI18n } from '../i18n'
 import { IconGlyphs } from '../utils/iconGlyphs'
 
@@ -29,6 +32,11 @@ const { t } = createAppI18n(localStorage.getItem('locale') || navigator.language
 </script>
 
 <style scoped>
+.home-scroll {
+  height: 100%;
+  min-height: 0;
+}
+
 .home-view {
   padding: 2rem;
   max-width: 960px;
