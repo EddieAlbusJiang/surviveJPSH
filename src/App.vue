@@ -1,59 +1,57 @@
 <template>
-  <WinThemeWrapper :Theme="theme">
-    <WinTitleBar
-      :Title="t('app.title')"
-      PreferredHeightOption="Tall"
-      :IsBackButtonVisible="canGoBack"
-      :IsBackButtonEnabled="canGoBack"
-      :IsPaneToggleButtonVisible="true"
-      TitleBarContentHorizontalAlignment="Stretch"
-      :IconSource="appIcon"
-      @BackRequested="onBackRequested"
-      @PaneToggleRequested="onTopBarToggle">
-      <WinAutoSuggestBox
-        v-model:Text="searchQuery"
-        :ItemsSource="searchResults"
-        TextMemberPath="title"
-        :PlaceholderText="t('search.placeholder')"
-        QueryIcon="Find"
-        :OpenOnFocus="true"
-        class="app-titlebar-search"
-        @QuerySubmitted="onSearchQuerySubmitted" />
-    </WinTitleBar>
-    <div class="app-content wco-titlebar">
-      <div class="nav-host">
-        <WinNavigationView
-          v-model:IsPaneOpen="isPaneOpen"
-          :MenuItems="menuItems"
-          :FooterMenuItems="footerItems"
-          :SelectedItem="currentRoute"
-          :IsSettingsVisible="false"
-          IsBackButtonVisible="Collapsed"
-          :IsPaneToggleButtonVisible="false"
-          :IsBackEnabled="canGoBack"
-          :OpenPaneLength="240"
-          @ItemInvoked="handleNavClick">
-          <router-view v-slot="{ Component }">
-            <Transition
-              appear
-              :enter-active-class="pageTransitionEnter"
-              :leave-active-class="pageTransitionLeave">
-              <div
-                v-if="Component"
-                :key="route.path"
-                class="page-view">
-                <component :is="Component" />
-              </div>
-            </Transition>
-          </router-view>
-        </WinNavigationView>
-      </div>
+  <WinTitleBar
+    :Title="t('app.title')"
+    PreferredHeightOption="Tall"
+    :IsBackButtonVisible="canGoBack"
+    :IsBackButtonEnabled="canGoBack"
+    :IsPaneToggleButtonVisible="true"
+    TitleBarContentHorizontalAlignment="Stretch"
+    :IconSource="appIcon"
+    @BackRequested="onBackRequested"
+    @PaneToggleRequested="onTopBarToggle">
+    <WinAutoSuggestBox
+      v-model:Text="searchQuery"
+      :ItemsSource="searchResults"
+      TextMemberPath="title"
+      :PlaceholderText="t('search.placeholder')"
+      QueryIcon="Find"
+      :OpenOnFocus="true"
+      class="app-titlebar-search"
+      @QuerySubmitted="onSearchQuerySubmitted" />
+  </WinTitleBar>
+  <div class="app-content wco-titlebar">
+    <div class="nav-host">
+      <WinNavigationView
+        v-model:IsPaneOpen="isPaneOpen"
+        :MenuItems="menuItems"
+        :FooterMenuItems="footerItems"
+        :SelectedItem="currentRoute"
+        :IsSettingsVisible="false"
+        IsBackButtonVisible="Collapsed"
+        :IsPaneToggleButtonVisible="false"
+        :IsBackEnabled="canGoBack"
+        :OpenPaneLength="240"
+        @ItemInvoked="handleNavClick">
+        <router-view v-slot="{ Component }">
+          <Transition
+            appear
+            :enter-active-class="pageTransitionEnter"
+            :leave-active-class="pageTransitionLeave">
+            <div
+              v-if="Component"
+              :key="route.path"
+              class="page-view">
+              <component :is="Component" />
+            </div>
+          </Transition>
+        </router-view>
+      </WinNavigationView>
     </div>
-  </WinThemeWrapper>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, provide } from 'vue'
+import { ref, computed, provide, watch, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   NavigationTrigger_NavigatingTo,
@@ -61,7 +59,6 @@ import {
   createEntranceNavigationTransitionInfo,
   getNavigationTransitionInfoClassName
 } from './utils/navigationTransitionInfo'
-import WinThemeWrapper from './components/WinThemeWrapper.vue'
 import WinTitleBar from './components/WinTitleBar.vue'
 import WinNavigationView from './components/WinNavigationView.vue'
 import WinAutoSuggestBox from './components/WinAutoSuggestBox.vue'
@@ -82,16 +79,53 @@ const t = i18n.t
 
 const appIcon = IconGlyphs.Home
 
-const theme = ref<'light' | 'dark' | 'system'>(
-  (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system'
-)
+const readTheme = (): 'light' | 'dark' | 'system' => {
+  const stored = localStorage.getItem('theme')
+  if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
+  return 'system'
+}
+
+const theme = ref<'light' | 'dark' | 'system'>(readTheme())
+
+const applyTheme = (mode: 'light' | 'dark' | 'system') => {
+  const html = document.documentElement
+  html.classList.remove('theme-light', 'theme-dark')
+  if (mode === 'light') html.classList.add('theme-light')
+  else if (mode === 'dark') html.classList.add('theme-dark')
+}
+
+let systemMedia: MediaQueryList | null = null
+let systemListener: (() => void) | null = null
+
+const setupSystemListener = () => {
+  cleanupSystemListener()
+  if (theme.value !== 'system') return
+  systemMedia = window.matchMedia('(prefers-color-scheme: dark)')
+  systemListener = () => {
+    if (theme.value === 'system') applyTheme('system')
+  }
+  systemMedia.addEventListener('change', systemListener)
+}
+
+const cleanupSystemListener = () => {
+  if (systemMedia && systemListener) {
+    systemMedia.removeEventListener('change', systemListener)
+  }
+  systemMedia = null
+  systemListener = null
+}
+
+watch(theme, (val) => {
+  localStorage.setItem('theme', val)
+  applyTheme(val)
+  if (val === 'system') setupSystemListener()
+  else cleanupSystemListener()
+}, { immediate: true })
+
+onUnmounted(cleanupSystemListener)
 
 provide('appTheme', theme)
-provide('setAppTheme', (v: 'light' | 'dark' | 'system') => {
-  theme.value = v
-  localStorage.setItem('theme', v)
-  location.reload()
-})
+provide('setAppTheme', (v: 'light' | 'dark' | 'system') => { theme.value = v })
 
 const canGoBack = ref(Boolean(router.options.history.state?.back))
 router.afterEach(() => {
