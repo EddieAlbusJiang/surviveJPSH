@@ -20,7 +20,7 @@
       <WinBreadcrumbBar
         class="doc-topbar-breadcrumb"
         :ItemsSource="headingPath.map(p => p.text)"
-        IsEnabled="false" />
+        :IsEnabled="false" />
     </div>
 
     <WinNavigationView
@@ -52,6 +52,7 @@ import WinScrollViewer from '../components/WinScrollViewer.vue'
 import WinBreadcrumbBar from '../components/WinBreadcrumbBar.vue'
 import { parseMarkdown } from '../utils/markdown'
 import { slugify } from '../utils/searchIndex'
+import { getDoc } from '../utils/docRegistry'
 import { IconGlyphs } from '../utils/iconGlyphs'
 import { createAppI18n } from '../i18n'
 
@@ -73,7 +74,7 @@ interface ScrollViewerExpose {
 
 const route = useRoute()
 const router = useRouter()
-const { t } = createAppI18n(localStorage.getItem('locale') || navigator.language)
+const { t } = createAppI18n()
 const content = ref('')
 const contentElement = ref<HTMLElement>()
 const scrollViewer = ref<ScrollViewerExpose>()
@@ -242,7 +243,9 @@ function onTocItemInvoked(args: { InvokedItemContainer?: { value?: string } }) {
 
 watch(() => route.params.id, async (id) => {
   if (!id) return
-  const loader = mdModules[`/src/docs/${id}.md`]
+  const doc = getDoc(id)
+  const file = doc?.file || ''
+  const loader = file ? mdModules[`/src/docs/${file}`] : undefined
   if (loader) {
     try {
       content.value = await loader() as string
