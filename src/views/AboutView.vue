@@ -42,7 +42,7 @@ import WinExpander from '../components/WinExpander.vue'
 import WinScrollViewer from '../components/WinScrollViewer.vue'
 import { createAppI18n } from '../i18n'
 
-const { t } = createAppI18n(localStorage.getItem('locale') || navigator.language)
+const { t } = createAppI18n()
 </script>
 
 <style scoped>

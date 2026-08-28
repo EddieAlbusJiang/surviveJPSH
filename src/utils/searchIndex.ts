@@ -4,22 +4,13 @@ export interface SearchResult {
   path: string
 }
 
+import { getDoc } from './docRegistry'
+
 const mdModules = import.meta.glob('/src/docs/*.md', {
   query: '?raw',
   import: 'default',
   eager: true
 }) as Record<string, string>
-
-const docTitles: Record<string, Record<string, string>> = {
-  study: { 'zh-CN': '学习篇', 'en-US': 'Study Guide' },
-  life: { 'zh-CN': '生活篇', 'en-US': 'Life Guide' }
-}
-
-export function getDocTitle(docId: string, locale: string): string {
-  const titles = docTitles[docId]
-  if (!titles) return docId
-  return titles[locale] || titles['zh-CN'] || docId
-}
 
 export function slugify(text: string): string {
   return text
@@ -117,7 +108,7 @@ function buildIndex(): IndexEntry[] {
 
 const searchIndex = buildIndex()
 
-export function searchDocs(query: string, locale: string = 'zh-CN'): SearchResult[] {
+export function searchDocs(query: string): SearchResult[] {
   if (!query || query.trim().length === 0) return []
 
   const terms = query.toLowerCase().split(/\s+/).filter(t => t.length > 0)
@@ -129,7 +120,7 @@ export function searchDocs(query: string, locale: string = 'zh-CN'): SearchResul
     })
     .map(section => ({
       title: section.heading,
-      subtitle: getDocTitle(section.docId, locale),
+      subtitle: getDoc(section.docId)?.title ?? section.docId,
       path: `/doc/${section.docId}#${section.anchor}`
     }))
     .slice(0, 10)

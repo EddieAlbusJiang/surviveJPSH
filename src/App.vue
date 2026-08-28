@@ -67,6 +67,7 @@ import WinNavigationView from './components/WinNavigationView.vue'
 import WinAutoSuggestBox from './components/WinAutoSuggestBox.vue'
 import { createAppI18n } from './i18n'
 import { searchDocs } from './utils/searchIndex'
+import { getDocs } from './utils/docRegistry'
 import { IconGlyphs } from './utils/iconGlyphs'
 
 const route = useRoute()
@@ -76,7 +77,7 @@ const navigationTransitionInfo = createEntranceNavigationTransitionInfo()
 const pageTransitionEnter = ref(getNavigationTransitionInfoClassName(navigationTransitionInfo, NavigationTrigger_NavigatingTo))
 const pageTransitionLeave = ref(getNavigationTransitionInfoClassName(navigationTransitionInfo, NavigationTrigger_NavigatingAway))
 
-const i18n = createAppI18n(localStorage.getItem('locale') || navigator.language)
+const i18n = createAppI18n()
 const t = i18n.t
 
 const appIcon = IconGlyphs.Home
@@ -119,10 +120,11 @@ const menuItems = computed(() => [
   {
     label: t('nav.docs'),
     icon: IconGlyphs.Library,
-    children: [
-      { value: '/doc/study', label: t('nav.study'), icon: IconGlyphs.Pen},
-      { value: '/doc/life', label: t('nav.life'), icon: IconGlyphs.Life},
-    ]
+    children: getDocs().map(doc => ({
+      value: `/doc/${doc.id}`,
+      label: doc.title,
+      icon: doc.icon
+    }))
   },
 ])
 
@@ -142,8 +144,7 @@ const searchQuery = ref('')
 const searchResults = computed(() => {
   const query = searchQuery.value.trim()
   if (!query) return []
-  const locale = localStorage.getItem('locale') || navigator.language
-  const results = searchDocs(query, locale)
+  const results = searchDocs(query)
   if (results.length === 0) {
     return [{ title: t('search.noResults'), subtitle: '', path: '' }]
   }
@@ -158,8 +159,7 @@ const onSearchQuerySubmitted = (args: { QueryText: string; ChosenSuggestion: any
     return
   }
 
-  // const locale = localStorage.getItem('locale') || navigator.language
-  // const results = searchDocs(query, locale)
+  // const results = searchDocs(query)
   // if (results.length > 0) {
   //   router.push(results[0].path)
   // }

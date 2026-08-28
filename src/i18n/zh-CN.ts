@@ -2,13 +2,9 @@ export default {
   'app.title': '建平中学生存手册',
   'nav.home': '首页',
   'nav.docs': '文档',
-  'nav.study': '学习篇',
-  'nav.life': '生活篇',
   'nav.about': '关于',
   'nav.settings': '设置',
   'home.subtitle': '上海市建平中学生存手册',
-  'home.study.desc': '选科、学习资源、身心状态、学习策略',
-  'home.life.desc': '老师、规则、朋友、恋爱、家长、活动、建议',
   'search.placeholder': '搜索文档...',
   'search.noResults': '没有找到结果',
   'about.title': '关于',
@@ -33,9 +29,5 @@ export default {
   'settings.theme.desc': '选择应用颜色模式',
   'settings.theme.light': '浅色',
   'settings.theme.dark': '深色',
-  'settings.theme.system': '跟随系统',
-  'settings.language': '语言',
-  'settings.language.desc': '选择界面语言',
-  'settings.language.zh': '中文',
-  'settings.language.en': 'English'
+  'settings.theme.system': '跟随系统'
 }
