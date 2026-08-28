@@ -89,10 +89,4 @@ body .tree-icon {
   outline-offset: 2px;
 }
 
-/* Transitions for theme switching */
-html,
-body,
-#app {
-  transition: background-color var(--normal-duration) var(--fast-out-slow-in),
-              color var(--normal-duration) var(--fast-out-slow-in);
-}
+
