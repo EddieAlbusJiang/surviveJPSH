@@ -96,7 +96,7 @@
           @pointerdown.prevent
           @click="clearText">
           <span class="win-textbox-delete-button-layout">
-            <span class="win-textbox-delete-glyph"></span>
+            <span class="win-textbox-delete-glyph">{{ IconGlyphs.Dismiss }}</span>
           </span>
         </button>
 

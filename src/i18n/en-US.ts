@@ -15,7 +15,6 @@ export default {
   'about.project': 'Project',
   'about.project.desc': 'This project provides a practical survival guide for new students at Jianping High School, covering both study and life aspects.',
   'about.project.tech': 'Tech stack: Vue 3 + TypeScript + Vite + WinUI on Web',
-  'about.project.ui': 'UI: WinUI-style component library (90+ components)',
   'about.project.deploy': 'Deploy: Cloudflare Workers + GitHub Pages',
   'about.authors': 'Contributors',
   'about.authors.desc': 'Thanks to all seniors and students who contributed content to this project.',

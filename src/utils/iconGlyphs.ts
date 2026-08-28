@@ -8,7 +8,7 @@ export const IconGlyphs = {
   ChevronRight:      '\uF2B3',
   ChevronLeft:       '\uF2AD',
   MoreHorizontal:    '\uE825',
-  Dismiss:           '\uF356',
+  Dismiss:           '\uF400',
   Checkmark:         '\uF285',
   Info:              '\u{0F085B}',
   Delete:            '\uF34D',
