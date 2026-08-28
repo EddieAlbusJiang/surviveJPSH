@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://survivejpsh/docs.schema.json",
+  "title": "SurviveJPSH 文档库配置",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["docs"],
+  "properties": {
+    "docs": {
+      "type": "array",
+      "description": "文档条目列表，网站自动据此生成导航与首页入口",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "file", "title", "icon"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "路由标识，用于 /doc/{id}",
+            "pattern": "^[a-z0-9_-]+$"
+          },
+          "file": {
+            "type": "string",
+            "description": "Markdown 文件名，如 study.md",
+            "pattern": "^[a-zA-Z0-9_-]+\\.md$"
+          },
+          "title": {
+            "type": "string",
+            "description": "文档标题（中文）"
+          },
+          "description": {
+            "type": "string",
+            "description": "文档简介，用于首页卡片与搜索"
+          },
+          "icon": {
+            "type": "string",
+            "description": "图标字符（FluentSystemIcons-Regular）。可写为字面 unicode 字符、\\uXXXX（4 位十六进制）或 \\u{XXXXXX}（1-6 位花括号形式，支持增补平面，如 \\u{F022B}）"
+          },
+          "category": {
+            "type": "string",
+            "description": "可选：导航分组，缺省归入“文档”组"
+          },
+          "hidden": {
+            "type": "boolean",
+            "description": "可选：为 true 时不在导航/首页显示，仅可通过链接访问"
+          }
+        }
+      }
+    }
+  }
+}

@@ -147,6 +147,7 @@
 <script setup>
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from './i18n/index';
+import WinButton from './WinButton.vue';
 import WinScrollViewer from './WinScrollViewer.vue';
 import WinTextBlock from './WinTextBlock.vue';
 import WinTextBox from './WinTextBox.vue';
@@ -1255,6 +1256,24 @@ onBeforeUnmount(() => {
 
 .win-combo-item.selected:active .win-combo-item-pill {
   height: 10px;
+}
+
+/* ComboBox button uses DefaultButtonStyle but needs input-style background
+   and fixed 32px height instead of Button's default transparent/28px. */
+.win-combo-btn {
+  --ButtonBackground: var(--ControlFillColorInputActiveBrush, var(--ctrl-fill-input-active));
+  --ButtonBackgroundPointerOver: var(--ControlFillColorSecondaryBrush, var(--ctrl-fill-secondary));
+  --ButtonBackgroundPressed: var(--ControlFillColorTertiaryBrush, var(--ctrl-fill-tertiary));
+  min-height: 32px;
+  height: 32px;
+}
+
+.win-combo-btn:hover {
+  --ButtonBackgroundCurrent: var(--ButtonBackgroundPointerOver);
+}
+
+.win-combo-btn:active {
+  --ButtonBackgroundCurrent: var(--ButtonBackgroundPressed);
 }
 
 </style>

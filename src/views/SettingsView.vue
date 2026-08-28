@@ -21,22 +21,11 @@
             <WinSettingsCard
               :Header="t('settings.theme')"
               :Description="t('settings.theme.desc')"
-              HeaderIcon="&#xF45B;"
+              HeaderIcon="&#x0F0224;"
               :Height="70">
               <WinComboBox
                 v-model:SelectedValue="themeValue"
                 :ItemsSource="themeOptions"
-                DisplayMemberPath="label"
-                SelectedValuePath="value" />
-            </WinSettingsCard>
-            <WinSettingsCard
-              :Header="t('settings.language')"
-              :Description="t('settings.language.desc')"
-              HeaderIcon="&#xF2E6;"
-              :Height="70">
-              <WinComboBox
-                v-model:SelectedValue="languageValue"
-                :ItemsSource="languageOptions"
                 DisplayMemberPath="label"
                 SelectedValuePath="value" />
             </WinSettingsCard>
@@ -56,7 +45,7 @@ import WinSettingsCard from '../components/WinSettingsCard.vue'
 import WinComboBox from '../components/WinComboBox.vue'
 import { createAppI18n } from '../i18n'
 
-const { t } = createAppI18n(localStorage.getItem('locale') || navigator.language)
+const { t } = createAppI18n()
 
 const appTheme = inject<import('vue').Ref<string>>('appTheme')
 const setAppTheme = inject<(v: string) => void>('setAppTheme')
@@ -70,25 +59,6 @@ const themeOptions = [
 const themeValue = computed({
   get: () => appTheme?.value ?? 'system',
   set: (v: string) => setAppTheme?.(v),
-})
-
-const normalizeLocale = (locale: string) => {
-  if (locale.startsWith('zh')) return 'zh-CN'
-  if (locale.startsWith('en')) return 'en-US'
-  return 'zh-CN'
-}
-
-const languageOptions = [
-  { label: t('settings.language.zh'), value: 'zh-CN' },
-  { label: t('settings.language.en'), value: 'en-US' },
-]
-
-const languageValue = computed({
-  get: () => normalizeLocale(localStorage.getItem('locale') || navigator.language),
-  set: (v: string) => {
-    localStorage.setItem('locale', v)
-    location.reload()
-  },
 })
 </script>
 

@@ -1,0 +1,43 @@
+name: Test Build
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: test-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload dist artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: ./dist
+
+      - name: Report success
+        if: success()
+        run: echo "::notice::Build succeeded — 构建成功"
+
+      - name: Report failure
+        if: failure()
+        run: echo "::error::Build failed — 构建失败，请查看 Build 步骤日志"

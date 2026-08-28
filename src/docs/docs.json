@@ -1,0 +1,18 @@
+{
+    "$schema": "./docs.schema.json",
+    "docs": [{
+            "id": "study",
+            "file": "study.md",
+            "title": "学习篇",
+            "description": "选科、学习资源、身心状态、学习策略",
+            "icon": "\u{0F022B}"
+        },
+        {
+            "id": "life",
+            "file": "life.md",
+            "title": "生活篇",
+            "description": "老师、规则、朋友、恋爱、家长、活动、建议",
+            "icon": "\uE589"
+        }
+    ]
+}
