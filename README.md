@@ -66,9 +66,10 @@ npx wrangler deploy
 ## 版本
 - **v0.1.0**: 初代demo，最简易的界面，传统html5。
   `Commit ID: 2f871a77669689fbc1c9f6bb0bb2e7b6e24fad67`
-- **v0.2.0**: 引入Vue, WinUIonWeb，更现代的界面。启用Github Pages。
+- **v0.2.0**: 引入Vue, WinUIonWeb，更现代的界面；启用Github Pages。
   `Commit ID: ac407e7845c6a4fafd7d737aece6f1700c5c6117`
-- **v0.2.1**: 为文档浏览界面引入导航边栏
+- **v0.2.1**: 为文档浏览界面引入导航边栏。
+- **v0.3.0**: 引入文档注册表；主题功能修复、UI优化。
 
 
 ## 许可证
