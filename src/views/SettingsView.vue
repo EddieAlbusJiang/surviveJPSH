@@ -21,7 +21,7 @@
             <WinSettingsCard
               :Header="t('settings.theme')"
               :Description="t('settings.theme.desc')"
-              HeaderIcon="&#xF45B;"
+              HeaderIcon="&#x0F0224;"
               :Height="70">
               <WinComboBox
                 v-model:SelectedValue="themeValue"
