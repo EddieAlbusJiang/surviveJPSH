@@ -29,5 +29,8 @@ export default {
   'settings.theme.desc': '选择应用颜色模式',
   'settings.theme.light': '浅色',
   'settings.theme.dark': '深色',
-  'settings.theme.system': '跟随系统'
+  'settings.theme.system': '跟随系统',
+  'settings.accentColor': '主题色',
+  'settings.accentColor.desc': '自定义应用的主题颜色',
+  'settings.accentColor.reset': '恢复默认'
 }

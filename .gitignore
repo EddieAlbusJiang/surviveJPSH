@@ -168,3 +168,4 @@ dist
 
 # office cache
 ~$*
+/.agent
