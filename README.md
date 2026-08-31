@@ -1,6 +1,11 @@
-# surviveJPSH 
-**上海市建平中学生存手册**
-v0.3.0 Under Construction
+# surviveJPSH 上海市建平中学生存手册
+
+<div>
+<img src="https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge"/>&emsp;<img src="https://img.shields.io/badge/preview-0.3.1-blue?style=for-the-badge"/>
+</div>
+
+Under Construction
+
 
 ## 项目介绍
 
@@ -14,6 +19,7 @@ v0.3.0 Under Construction
 
 ## 内容
 
+- **思维篇**：解析、认识、评价、实践、超越、我与世界
 - **学习篇**: 选科、学习资源、身心状态、学习策略
 - **生活篇**: 老师、规则、朋友、恋爱、家长、活动、建议等
 
@@ -63,7 +69,7 @@ npx wrangler deploy
 
 ### GitHub Pages （所有Collaborators均可操作）
 
-项目已配置 GitHub Actions，更新合并到 `main` 分支后会自动部署到 GitHub Pages。
+项目已配置 GitHub Actions，更新合并到 `main` 分支后将自动部署到 GitHub Pages。
 
 ## 版本
 - **v0.1.0**: 初代demo，最简易的界面，传统html5。
@@ -72,6 +78,7 @@ npx wrangler deploy
   `Commit ID: ac407e7845c6a4fafd7d737aece6f1700c5c6117`
 - **v0.2.1**: 为文档浏览界面引入导航边栏。
 - **v0.3.0**: 引入文档注册表；主题功能修复、UI优化。
+- **v0.3.1**: 新增思维篇文档。
 
 ---
 
@@ -80,3 +87,5 @@ npx wrangler deploy
 本项目内容采用 CC BY-SA 4.0 许可证。
 
 UI 组件库 [WinUI on Web](https://github.com/Furry-Xiyi/WinUIonWeb) 采用 GPL-3.0 许可证。
+
+---

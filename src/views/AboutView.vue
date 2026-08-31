@@ -1,7 +1,7 @@
 <template>
   <WinScrollViewer class="about-scroll">
     <div class="about-view">
-      <h4>Preview v0.3.0</h4>
+      <h4>Preview v0.3.1</h4>
       <h1 class="about-title">{{ t('about.title') }}</h1>
 
       <WinExpander :Header="t('about.project')" :IsOpen="true">

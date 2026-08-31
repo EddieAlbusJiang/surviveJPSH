@@ -66,6 +66,7 @@ import { createAppI18n } from './i18n'
 import { searchDocs } from './utils/searchIndex'
 import { getDocs } from './utils/docRegistry'
 import { IconGlyphs } from './utils/iconGlyphs'
+import { generateAccentVariants, DEFAULT_ACCENT_COLOR } from './utils/colorUtils'
 
 const route = useRoute()
 const router = useRouter()
@@ -78,6 +79,23 @@ const i18n = createAppI18n()
 const t = i18n.t
 
 const appIcon = IconGlyphs.Home
+
+const readAccentColor = (): string => {
+  const stored = localStorage.getItem('accentColor')
+  if (stored && /^#[0-9a-f]{6}$/i.test(stored)) return stored
+  return DEFAULT_ACCENT_COLOR
+}
+
+const accentColor = ref<string>(readAccentColor())
+
+const applyAccentColor = () => {
+  const html = document.documentElement
+  const isDark = html.classList.contains('theme-dark')
+  const variants = generateAccentVariants(accentColor.value, isDark)
+  for (const [key, value] of Object.entries(variants)) {
+    html.style.setProperty(key, value)
+  }
+}
 
 const readTheme = (): 'light' | 'dark' | 'system' => {
   const stored = localStorage.getItem('theme')
@@ -92,6 +110,7 @@ const applyTheme = (mode: 'light' | 'dark' | 'system') => {
   html.classList.remove('theme-light', 'theme-dark')
   if (mode === 'light') html.classList.add('theme-light')
   else if (mode === 'dark') html.classList.add('theme-dark')
+  applyAccentColor()
 }
 
 let systemMedia: MediaQueryList | null = null
@@ -122,10 +141,17 @@ watch(theme, (val) => {
   else cleanupSystemListener()
 }, { immediate: true })
 
+watch(accentColor, (val) => {
+  localStorage.setItem('accentColor', val)
+  applyAccentColor()
+}, { immediate: true })
+
 onUnmounted(cleanupSystemListener)
 
 provide('appTheme', theme)
 provide('setAppTheme', (v: 'light' | 'dark' | 'system') => { theme.value = v })
+provide('accentColor', accentColor)
+provide('setAccentColor', (v: string) => { accentColor.value = v })
 
 const canGoBack = ref(Boolean(router.options.history.state?.back))
 router.afterEach(() => {
