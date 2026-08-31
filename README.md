@@ -1,8 +1,11 @@
-# surviveJPSH 
-**上海市建平中学生存手册**
-v0.3.0 Under Construction
+# surviveJPSH 上海市建平中学生存手册
 
----
+<div>
+<img src="https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge"/>&emsp;<img src="https://img.shields.io/badge/preview-0.3.1-blue?style=for-the-badge"/>
+</div>
+
+Under Construction
+
 
 ## 项目介绍
 
@@ -66,7 +69,7 @@ npx wrangler deploy
 
 ### GitHub Pages （所有Collaborators均可操作）
 
-项目已配置 GitHub Actions，更新合并到 `main` 分支后会自动部署到 GitHub Pages。
+项目已配置 GitHub Actions，更新合并到 `main` 分支后将自动部署到 GitHub Pages。
 
 ## 版本
 - **v0.1.0**: 初代demo，最简易的界面，传统html5。
@@ -75,6 +78,7 @@ npx wrangler deploy
   `Commit ID: ac407e7845c6a4fafd7d737aece6f1700c5c6117`
 - **v0.2.1**: 为文档浏览界面引入导航边栏。
 - **v0.3.0**: 引入文档注册表；主题功能修复、UI优化。
+- **v0.3.1**: 新增思维篇文档。
 
 ---
 
