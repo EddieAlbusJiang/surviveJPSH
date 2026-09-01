@@ -198,18 +198,29 @@ function updateActiveHeading() {
   if (!tocHeadings.value.length) return
 
   const viewport = getScrollViewport()
-  if (viewport && viewport.scrollTop + viewport.clientHeight >= viewport.scrollHeight - 2) {
-    activeHeadingId.value = tocHeadings.value[tocHeadings.value.length - 1].id
-    return
-  }
-  const viewportTop = viewport?.getBoundingClientRect().top ?? 0
-  const activationLine = viewportTop + 72
+  if (!viewport) return
+
+  const viewportRect = viewport.getBoundingClientRect()
+  const activationLine = viewportRect.top + 72
+  const viewportBottom = viewportRect.bottom
   let currentId = tocHeadings.value[0].id
 
   for (const heading of tocHeadings.value) {
     const element = document.getElementById(heading.id)
     if (!element || element.getBoundingClientRect().top > activationLine) break
     currentId = heading.id
+  }
+
+  // 当折叠到文档末尾时，最后一个标题下方没有足够的正文可把它推到激活线上方，
+  // 导致它在侧边导航里始终无法高亮。只要它已经进入视窗，就应成为当前激活项。
+  const last = tocHeadings.value[tocHeadings.value.length - 1]
+  const lastElement = document.getElementById(last.id)
+  if (lastElement && currentId !== last.id) {
+    const lastTop = lastElement.getBoundingClientRect().top
+    if (lastTop > activationLine && lastTop < viewportBottom) {
+      activeHeadingId.value = last.id
+      return
+    }
   }
 
   activeHeadingId.value = currentId
