@@ -1,7 +1,7 @@
 # surviveJPSH 上海市建平中学生存手册
 
 <div>
-<img src="https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge"/>&emsp;<img src="https://img.shields.io/badge/preview-0.3.1-blue?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge"/>&emsp;<img src="https://img.shields.io/badge/preview-0.3.2-blue?style=for-the-badge"/>
 </div>
 
 Under Construction
@@ -79,6 +79,7 @@ npx wrangler deploy
 - **v0.2.1**: 为文档浏览界面引入导航边栏。
 - **v0.3.0**: 引入文档注册表；主题功能修复、UI优化。
 - **v0.3.1**: 新增思维篇文档。
+- **v0.3.2**: 新增序言、升学篇文档。
 
 ---
 
