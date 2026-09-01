@@ -16,13 +16,6 @@
             "icon": "\u{0F09B4}"
         },
         {
-            "id": "cognition_old",
-            "file": "cognition_old.md",
-            "title": "思维篇（旧版）",
-            "description": "解析、认识、评价、实践、超越、我与世界",
-            "icon": "\u{0F09B4}"
-        },
-        {
             "id": "life",
             "file": "life.md",
             "title": "生活篇",
