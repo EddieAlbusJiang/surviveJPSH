@@ -38,7 +38,11 @@
       @ItemInvoked="onTocItemInvoked">
 
       <WinScrollViewer ref="scrollViewer" class="doc-scroll" @ViewChanged="onDocumentScroll">
-        <div ref="contentElement" class="doc-content markdown-body" v-html="renderedMarkdown"></div>
+        <div ref="contentElement" class="doc-content markdown-body" v-html="renderedMarkdown" :style="{ paddingBottom: scrollBottomPadding + 'px' }"></div>
+        <div style="text-align: center;">
+          <img src="https://fastcdn.mihoyo.com/content-v2/hk4e/161254/7465130773d14daec785647afbf27790_8030152647334037188.png" draggable="false" style="aspect-ratio: 1;height: 10rem;">
+          
+        </div>
       </WinScrollViewer>
     </WinNavigationView>
   </div>
@@ -82,7 +86,10 @@ const headings = ref<DocumentHeading[]>([])
 const tocHeadings = computed(() => headings.value.filter(h => h.level > 1))
 const activeHeadingId = ref('')
 const isTocOpen = ref(typeof window === 'undefined' || window.innerWidth >= 900)
+const viewportHeight = ref(0)
+const scrollBottomPadding = computed(() => Math.max(0, viewportHeight.value))
 let scrollFrame = 0
+let viewportResizeObserver: ResizeObserver | undefined
 
 const headingPath = computed(() => {
   if (!activeHeadingId.value || !headings.value.length) return []
@@ -142,6 +149,22 @@ function getScrollViewport(): HTMLDivElement | undefined {
   const exposed = scrollViewer.value?.scrollViewerRef
   if (exposed instanceof HTMLDivElement) return exposed
   return exposed?.value
+}
+
+function watchViewportHeight(): void {
+  disconnectViewportObserver()
+  const viewport = getScrollViewport()
+  if (!viewport) return
+  viewportHeight.value = viewport.clientHeight
+  viewportResizeObserver = new ResizeObserver(() => {
+    viewportHeight.value = viewport.clientHeight
+  })
+  viewportResizeObserver.observe(viewport)
+}
+
+function disconnectViewportObserver(): void {
+  viewportResizeObserver?.disconnect()
+  viewportResizeObserver = undefined
 }
 
 function buildHeadingIndex() {
@@ -251,6 +274,7 @@ watch(() => route.params.id, async (id) => {
       content.value = await loader() as string
       await nextTick()
       buildHeadingIndex()
+      watchViewportHeight()
       const viewport = getScrollViewport()
       if (route.hash) scrollToHash('auto')
       else if (viewport) viewport.scrollTop = 0
@@ -258,11 +282,13 @@ watch(() => route.params.id, async (id) => {
       content.value = `# ${t('doc.loadError')}`
       await nextTick()
       buildHeadingIndex()
+      watchViewportHeight()
     }
   } else {
     content.value = `# ${t('doc.notFound')}`
     await nextTick()
     buildHeadingIndex()
+    watchViewportHeight()
   }
 }, { immediate: true })
 
@@ -274,6 +300,7 @@ watch(() => route.hash, async hash => {
 
 onBeforeUnmount(() => {
   if (scrollFrame) cancelAnimationFrame(scrollFrame)
+  disconnectViewportObserver()
 })
 </script>
 
@@ -363,7 +390,9 @@ onBeforeUnmount(() => {
 
 .doc-content {
   box-sizing: border-box;
-  padding: 2rem;
+  padding-top: 2rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
   max-width: 800px;
   margin: 0 auto;
   width: 100%;

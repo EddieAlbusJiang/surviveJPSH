@@ -33,7 +33,11 @@
       <WinExpander :Header="t('about.contributing')">
         <div class="about-section">
           <p>{{ t('about.contributing.desc') }}</p>
-          <p>{{ t('about.contributing.repo') }}<a href="https://github.com/EddieAlbusJiang/surviveJPSH">https://github.com/EddieAlbusJiang/surviveJPSH</a></p>
+          <p>{{ t('about.contributing.repo') }}
+            <a href="https://github.com/EddieAlbusJiang/surviveJPSH">https://github.com/EddieAlbusJiang/surviveJPSH</a></p>
+          <p>{{ t('about.contributing.mail') }}
+            <a href="=mailto:EternalStarfield@yeah.net">EternalStarfield@yeah.net</a></p>
+          <p>{{ t('about.contributing.anymore') }}</p>
         </div>
       </WinExpander>
     </div>

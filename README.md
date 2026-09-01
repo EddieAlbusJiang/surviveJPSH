@@ -23,6 +23,10 @@ Under Construction
 - **学习篇**: 选科、学习资源、身心状态、学习策略
 - **生活篇**: 老师、规则、朋友、恋爱、家长、活动、建议等
 
+## 一起完善这个项目！
+- **Issue/PR**（首选）：我们欢迎建平校友通过本仓库Issue通道反馈问题和建议，或提交PR直接助力项目完善。Issue通道同时接受投稿。
+- **邮箱投稿**（备选）：我们也欢迎建平校友通过邮箱渠道投稿或反馈，敬请发送邮件至 [EternalStarfield@yeah.net](mailto:eternalstarfield@yeah.net)（备注标题“surviveJPSH投稿/反馈”）
+
 ---
 
 ## 技术栈
