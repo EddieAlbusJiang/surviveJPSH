@@ -1,6 +1,7 @@
 export default {
   'app.title': '建平中学生存手册',
   'nav.home': '首页',
+  'nav.prologue': '序言',
   'nav.docs': '文档',
   'nav.about': '关于',
   'nav.settings': '设置',

@@ -6,6 +6,7 @@ export interface DocEntry {
   title: string
   description: string
   icon: string
+  hidden: boolean
 }
 
 function decodeUnicodeEscapes(text: string): string {
@@ -20,8 +21,8 @@ const docsJson = JSON.parse(decodeUnicodeEscapes(docsRaw)) as { docs: DocEntry[]
 
 const entries: DocEntry[] = docsJson.docs || []
 
-export function getDocs(): DocEntry[] {
-  return entries
+export function getDocs(includeHidden = false): DocEntry[] {
+  return includeHidden ? entries : entries.filter(e => !e.hidden)
 }
 
 export function getDoc(id: string): DocEntry | undefined {
