@@ -24,11 +24,19 @@
 import { useRouter } from 'vue-router'
 import WinScrollViewer from '../components/WinScrollViewer.vue'
 import { createAppI18n } from '../i18n'
-import { getDocs } from '../utils/docRegistry'
+import { getDocs, DocEntry } from '../utils/docRegistry'
 
 const router = useRouter()
 const { t } = createAppI18n()
-const docs = getDocs(true)
+const docs = getDocs()
+docs.unshift({
+  id: "prologue",
+  file: "prologue.md",
+  title: "序言",
+  description: "编者的话",
+  icon: "\u{0F0A14}",
+  hidden: true,
+})
 </script>
 
 <style scoped>
