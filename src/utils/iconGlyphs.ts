@@ -39,7 +39,8 @@ export const IconGlyphs = {
   Important:         '\uF87A',
   Pen:               '\u{0F022B}',
   Brace:             '\uEE92',
-  Life:              '\uE589'
+  Life:              '\uE589',
+  Prologue:          '\u{0F0A14}'
 } as const
 
 export type IconName = keyof typeof IconGlyphs

@@ -65,7 +65,7 @@ import WinAutoSuggestBox from './components/WinAutoSuggestBox.vue'
 import { createAppI18n } from './i18n'
 import { searchDocs } from './utils/searchIndex'
 import { getDocs } from './utils/docRegistry'
-import { IconGlyphs } from './utils/iconGlyphs'
+import { IconGlyphs, type IconName } from './utils/iconGlyphs'
 import { generateAccentVariants, DEFAULT_ACCENT_COLOR } from './utils/colorUtils'
 
 const route = useRoute()
@@ -169,6 +169,7 @@ const onTopBarToggle = () => {
 const currentRoute = computed(() => {
   const path = route.path
   if (path === '/') return '/'
+  if (path === '/prologue') return '/prologue'
   if (path.startsWith('/doc/')) return `/doc/${route.params.id}`
   if (path === '/settings') return '/settings'
   if (path === '/about') return '/about'
@@ -177,6 +178,7 @@ const currentRoute = computed(() => {
 
 const menuItems = computed(() => [
   { value: '/', label: t('nav.home'), icon: IconGlyphs.Home },
+  { value: '/prologue', label: t('nav.prologue'), icon: IconGlyphs.Prologue },
   {
     label: t('nav.docs'),
     icon: IconGlyphs.Library,

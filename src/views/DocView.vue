@@ -243,7 +243,7 @@ function onTocItemInvoked(args: { InvokedItemContainer?: { value?: string } }) {
 
 watch(() => route.params.id, async (id) => {
   if (!id) return
-  const doc = getDoc(id)
+  const doc = getDoc(String(id))
   const file = doc?.file || ''
   const loader = file ? mdModules[`/src/docs/${file}`] : undefined
   if (loader) {

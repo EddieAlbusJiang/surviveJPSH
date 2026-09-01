@@ -10,7 +10,7 @@
           v-for="doc in docs"
           :key="doc.id"
           class="doc-card"
-          @click="router.push(`/doc/${doc.id}`)">
+          @click="router.push(doc.id == `prologue` ?  `/prologue` : `/doc/${doc.id}`)">
           <div class="card-icon">{{ doc.icon }}</div>
           <h2 class="card-title">{{ doc.title }}</h2>
           <p class="card-desc">{{ doc.description }}</p>
@@ -28,7 +28,7 @@ import { getDocs } from '../utils/docRegistry'
 
 const router = useRouter()
 const { t } = createAppI18n()
-const docs = getDocs()
+const docs = getDocs(true)
 </script>
 
 <style scoped>

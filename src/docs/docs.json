@@ -1,11 +1,26 @@
 {
     "$schema": "./docs.schema.json",
     "docs": [{
+            "id": "prologue",
+            "file": "prologue.md",
+            "title": "序言",
+            "description": "编者的话",
+            "icon": "\u{0F0A14}",
+            "hidden": true
+        },
+        {
             "id": "cognition",
             "file": "cognition.md",
             "title": "思维篇",
             "description": "解析、认识、评价、实践、超越、我与世界",
             "icon": "\u{0F09B4}"
+        },
+        {
+            "id": "life",
+            "file": "life.md",
+            "title": "生活篇",
+            "description": "老师、规则、朋友、恋爱、家长、活动",
+            "icon": "\uE589"
         },
         {
             "id": "study",
@@ -15,11 +30,11 @@
             "icon": "\u{0F022B}"
         },
         {
-            "id": "life",
-            "file": "life.md",
-            "title": "生活篇",
-            "description": "老师、规则、朋友、恋爱、家长、活动",
-            "icon": "\uE589"
+            "id": "graduate",
+            "file": "graduate.md",
+            "title": "升学篇",
+            "description": "强基计划、综合评价、普通批次、专业选择",
+            "icon": "\uF035"
         }
     ]
 }

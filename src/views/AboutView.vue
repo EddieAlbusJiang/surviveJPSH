@@ -1,9 +1,12 @@
 <template>
   <WinScrollViewer class="about-scroll">
     <div class="about-view">
-      <h4>Preview v0.3.1</h4>
       <h1 class="about-title">{{ t('about.title') }}</h1>
-
+      <div class="about-version">
+      <img src="https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge"/>
+      &emsp;
+      <img src="https://img.shields.io/badge/preview-0.3.2-blue?style=for-the-badge"/>
+      </div>
       <WinExpander :Header="t('about.project')" :IsOpen="true">
         <div class="about-section">
           <p>{{ t('about.project.desc') }}</p>
@@ -52,15 +55,23 @@ const { t } = createAppI18n()
 }
 
 .about-view {
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
+  margin: 24px 36px 36px;
+  /* padding: 24px 36px 36px; */
+  /* max-width: 800px; */
+  /* margin: 0 auto; */
 }
 
 .about-title {
   font-size: 2rem;
   font-weight: 600;
-  margin: 0 0 2rem 0;
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+}
+
+.about-version {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 1rem 3px;
   color: var(--text-primary);
 }
 
