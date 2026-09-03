@@ -3689,7 +3689,7 @@ watch(() => props.selectedValue, (val) => {
     padding-left: 44px;
   }
 
-    .win-nav-group-child .icon {
+    .win-nav-group-child .icon:not(.win-nav-group-chevron) {
       margin-right: 16px;
     }
 
